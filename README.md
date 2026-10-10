@@ -18,6 +18,8 @@ ONDO Agent の LINE 内ページ（LIFF）を置くリポジトリ。GitHub Page
 :::
 ```
 
+- `column/resume/` … 履歴書・職務経歴書の作成フォーム（LIFF：https://liff.line.me/{LIFF ID}/resume/ で開く）
+
 ## 記事 ID の付け方
 `職種-大分類-連番`（例：`hoiku-B-01`）。大分類と意思レベルは ONDO のコラム設計（06）に準拠。
 

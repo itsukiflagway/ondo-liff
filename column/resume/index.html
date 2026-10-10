@@ -1,0 +1,349 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>書類をつくる｜ONDO</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap">
+<style>
+/* 書類作成ウィザード：上に進捗、1画面1テーマ、下に固定の「次へ」 */
+:root{
+  --ink:#14302A; --text:#2A3330; --muted:#6B7A75; --line:#DDE5E1; --soft:#F2F6F4;
+  --green:#0F7B5F; --green-soft:#E3F1EC; --warm:#E06A2E; --warm-soft:#FCEDE4; --bg:#FFFFFF; --danger:#B3361F;
+  --font:"Zen Kaku Gothic New","Hiragino Sans","Noto Sans JP",system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--text)}
+body{font-family:var(--font);font-size:16px;line-height:1.7;-webkit-text-size-adjust:100%}
+.top{position:sticky;top:0;z-index:5;background:var(--bg);padding:12px 20px 10px;border-bottom:1px solid var(--line)}
+.top .row{display:flex;justify-content:space-between;align-items:baseline;font-size:12px;color:var(--muted)}
+.top .row b{color:var(--green);font-size:13px}
+.prog{height:6px;background:var(--line);border-radius:3px;margin-top:6px;overflow:hidden}
+.prog i{display:block;height:100%;background:var(--green);border-radius:3px;transition:width .25s}
+main{max-width:640px;margin:0 auto;padding:20px 20px 120px}
+h1{font-size:22px;line-height:1.5;margin:4px 0 6px;color:var(--ink);text-wrap:balance}
+h2{font-size:17px;color:var(--ink);margin:26px 0 8px}
+.lead{color:var(--muted);font-size:14px;margin:0 0 18px}
+.field{margin:14px 0}
+.field label,.lbl{display:block;font-size:13px;font-weight:700;color:var(--ink);margin-bottom:6px}
+.field small{font-weight:400;color:var(--muted);margin-left:6px}
+input[type=text],input[type=tel],input[type=email],input[type=date],input[type=month],select,textarea{width:100%;font:inherit;font-size:16px;padding:11px 12px;border:1.5px solid var(--line);border-radius:10px;background:#fff;color:var(--text)}
+textarea{min-height:110px;line-height:1.7;resize:vertical}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--green)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1.5px solid var(--line);background:#fff;color:var(--text);border-radius:999px;padding:7px 14px;font:inherit;font-size:14px;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--green-soft);border-color:var(--green);color:var(--green);font-weight:700}
+.card{border:1.5px solid var(--line);border-radius:14px;padding:4px 16px 14px;margin:16px 0}
+.card h3{font-size:15px;color:var(--ink);margin:12px 0 0;display:flex;justify-content:space-between;align-items:center}
+.link{background:none;border:0;color:var(--green);font:inherit;font-size:14px;font-weight:700;padding:8px 0;cursor:pointer}
+.link.del{color:var(--danger);font-weight:500;font-size:13px}
+.note{font-size:13px;color:var(--muted);background:var(--soft);border-radius:10px;padding:12px 14px;margin:14px 0}
+.note b{color:var(--ink)}
+.warn{font-size:13px;color:#7A3B12;background:var(--warm-soft);border-radius:10px;padding:12px 14px;margin:14px 0}
+.err{color:var(--danger);font-size:13px;margin-top:6px}
+.check{display:flex;gap:10px;align-items:center;font-size:14px;margin-top:8px}
+.check input{width:20px;height:20px;accent-color:var(--green)}
+.bottom{position:fixed;left:0;right:0;bottom:0;background:rgba(255,255,255,.96);border-top:1px solid var(--line);padding:12px 20px calc(12px + env(safe-area-inset-bottom,0px));display:flex;gap:10px;z-index:6}
+.btn{flex:1;min-height:50px;border-radius:12px;border:0;font:inherit;font-size:16px;font-weight:700;cursor:pointer}
+.btn.primary{background:var(--green);color:#fff}
+.btn.warm{background:var(--warm);color:#fff}
+.btn.sub{background:var(--soft);color:var(--ink);flex:0 0 32%}
+.btn:disabled{opacity:.55}
+.btn:focus-visible,.chip:focus-visible{outline:3px solid #F3B44B;outline-offset:2px}
+.ai{border:1.5px solid var(--green);border-radius:14px;padding:6px 16px 16px;margin:16px 0;background:#FBFEFC}
+.ai .tag{display:inline-block;font-size:11px;font-weight:700;color:var(--green);background:var(--green-soft);border-radius:4px;padding:1px 8px;margin-top:12px}
+.spinner{width:36px;height:36px;border-radius:50%;border:4px solid var(--green-soft);border-top-color:var(--green);margin:28px auto 12px;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.spinner{animation:none}}
+.center{text-align:center}
+.preview{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#F7F7F5;margin:16px 0}
+.preview .scaler{transform-origin:top left}
+.done{font-size:44px;line-height:1;margin:18px 0 4px;color:var(--green)}
+</style>
+</head>
+<body>
+<header class="top" id="top" hidden>
+  <div class="row"><b id="stepLabel"></b><span id="stepCount"></span></div>
+  <div class="prog"><i id="bar"></i></div>
+</header>
+<main id="app"><p class="lead">読み込んでいます…</p></main>
+<nav class="bottom" id="nav" hidden></nav>
+
+<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+<script src="../config.js"></script>
+<script>
+(function () {
+  const cfg = window.ONDO_CONFIG || {};
+  const app = document.getElementById('app');
+  const nav = document.getElementById('nav');
+  const KEY = 'ondo_resume_draft';
+
+  const OPT = {
+    licenses: ['保育士', '幼稚園教諭一種免許状', '幼稚園教諭二種免許状', '子育て支援員', '社会福祉士', '普通自動車第一種運転免許'],
+    facility: ['認可保育園', '小規模保育', '企業主導型保育', '院内保育', '認定こども園', '幼稚園', '学童保育', '認可外保育施設', 'その他'],
+    capacity: ['〜19名', '20〜59名', '60〜89名', '90〜119名', '120名以上'],
+    employment: ['正社員', '契約社員', 'パート', '派遣'],
+    classes: ['0歳児', '1歳児', '2歳児', '3歳児', '4歳児', '5歳児', '異年齢', '学童'],
+    team: ['単独担任', '複数担任', 'フリー'],
+    role: ['なし', 'リーダー', '職務分野別リーダー', '副主任', '主任', '園長'],
+    duties: ['行事の企画・運営', '実習生の指導', '新人・後輩の指導', '保護者対応', '指導計画の作成', '食育', '障害児保育・加配', '乳児保育', '英語・リトミック', '保育ICTの導入・運用', '地域の子育て支援'],
+    strengths: ['ピアノ', '製作', '運動遊び', '絵本・読み聞かせ', 'リトミック', '手遊び・歌', '自然遊び', '食育', '障害児保育', '保護者対応', 'ICT'],
+    values: ['子どもの主体性を大切にする', '一人ひとりに寄り添う', '安全・安心な環境づくり', '保護者との信頼関係', 'チームで保育する', '遊びを通した学び']
+  };
+  const STEPS = ['はじめに', '基本情報', '学歴', '資格', '職歴', '得意なこと', 'AI下書き', '完成'];
+
+  const emptyJob = () => ({ org: '', facility: '', capacity: '', employment: '正社員', start: '', end: '', current: false, classes: [], classSize: '', team: '', role: 'なし', duties: [], note: '' });
+  const blank = () => ({
+    basic: { name: '', kana: '', birth: '', address: '', phone: '', email: '' },
+    edu: [{ school: '', dept: '', entered: '', graduated: '' }],
+    licenses: [], otherLicense: '', licenseDate: {},
+    jobs: [emptyJob()],
+    skills: { strengths: [], values: [], note: '' },
+    wish: { motivation: '', request: '貴園の規定に従います。' },
+    texts: null
+  });
+  const SAMPLE = {
+    basic: { name: '山田 花子', kana: 'やまだ はなこ', birth: '1995-04-12', address: '東京都世田谷区〇〇1-2-3', phone: '090-0000-0000', email: 'hanako@example.com' },
+    edu: [{ school: '〇〇短期大学', dept: '保育学科', entered: '2013-04', graduated: '2015-03' }],
+    licenses: ['保育士', '幼稚園教諭二種免許状'], otherLicense: '', licenseDate: { '保育士': '2015-03', '幼稚園教諭二種免許状': '2015-03' },
+    jobs: [
+      { org: '社会福祉法人さくら会 さくら保育園', facility: '認可保育園', capacity: '90〜119名', employment: '正社員', start: '2015-04', end: '2020-03', current: false, classes: ['1歳児', '2歳児', '4歳児'], classSize: '18', team: '複数担任', role: 'リーダー', duties: ['行事の企画・運営', '実習生の指導', '保護者対応', '指導計画の作成'], note: '運動会の担当として、年齢ごとの競技の見直しを提案した' },
+      { org: '株式会社ひかりキッズ ひかり小規模保育園', facility: '小規模保育', capacity: '〜19名', employment: '正社員', start: '2020-04', end: '', current: true, classes: ['0歳児', '1歳児'], classSize: '6', team: '複数担任', role: '副主任', duties: ['新人・後輩の指導', '保育ICTの導入・運用', '乳児保育', '保護者対応'], note: '連絡帳アプリの導入を担当し、記録にかかる時間の短縮に取り組んだ' }
+    ],
+    skills: { strengths: ['ピアノ', '製作', '絵本・読み聞かせ'], values: ['一人ひとりに寄り添う', 'チームで保育する'], note: '' },
+    wish: { motivation: '', request: '貴園の規定に従います。' },
+    texts: null
+  };
+
+  const state = { step: 0, uid: null, inClient: false, data: load() || blank(), busy: false, result: null };
+
+  function load() { try { const s = localStorage.getItem(KEY); return s ? JSON.parse(s) : null; } catch (e) { return null; } }
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(state.data)); } catch (e) { /* 保存できなくても続行 */ } }
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+  /* data-path="basic.name" のような指定で値を読み書きする */
+  function getPath(path) { return path.split('.').reduce((o, k) => (o == null ? o : o[k]), state.data); }
+  function setPath(path, v) {
+    const ks = path.split('.'); let o = state.data;
+    ks.slice(0, -1).forEach(k => { o = o[k]; });
+    o[ks[ks.length - 1]] = v; save();
+  }
+
+  async function api(action, payload) {
+    if (!cfg.gasUrl) throw new Error('サーバーの設定がありません');
+    const res = await fetch(cfg.gasUrl, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify(Object.assign({ ondoResume: 1, action, userId: state.uid }, payload || {})) });
+    const j = await res.json();
+    if (!j.ok) throw new Error(j.error || '処理に失敗しました');
+    return j;
+  }
+
+  /* ---------- 入力部品 ---------- */
+  const input = (path, label, type, opts) => {
+    opts = opts || {};
+    return `<div class="field"><label for="f_${path}">${label}${opts.hint ? `<small>${opts.hint}</small>` : ''}</label>
+      <input id="f_${path}" type="${type || 'text'}" data-path="${path}" value="${esc(getPath(path))}" ${opts.ph ? `placeholder="${esc(opts.ph)}"` : ''} ${opts.ac ? `autocomplete="${opts.ac}"` : ''}></div>`;
+  };
+  const select = (path, label, list) => `<div class="field"><label for="f_${path}">${label}</label><select id="f_${path}" data-path="${path}"><option value="">選んでください</option>${list.map(o => `<option ${getPath(path) === o ? 'selected' : ''}>${esc(o)}</option>`).join('')}</select></div>`;
+  const chips = (path, label, list, single) => {
+    const cur = getPath(path);
+    return `<div class="field"><span class="lbl">${label}${single ? '' : '<small>いくつでも</small>'}</span><div class="chips">${list.map(o => {
+      const on = single ? cur === o : (cur || []).includes(o);
+      return `<button type="button" class="chip" data-chip="${path}" data-val="${esc(o)}" data-single="${single ? 1 : ''}" aria-pressed="${on}">${esc(o)}</button>`;
+    }).join('')}</div></div>`;
+  };
+  const textarea = (path, label, ph, rows) => `<div class="field"><label for="f_${path}">${label}</label><textarea id="f_${path}" data-path="${path}" rows="${rows || 4}" placeholder="${esc(ph || '')}">${esc(getPath(path))}</textarea></div>`;
+
+  /* ---------- 各ステップ ---------- */
+  function stepIntro() {
+    return `<h1>履歴書と職務経歴書を、LINEでつくる</h1>
+      <p class="lead">選んで答えるだけで、応募書類の下書きが完成します。文章はAIが下書きし、最後にあなたが確認・修正できます。</p>
+      <div class="note"><b>所要時間：約10分</b>（途中で閉じても、入力内容はこのスマホに残ります）<br>
+      入力した情報は書類の作成と、担当のキャリアアドバイザーからのご提案にだけ使います。あなたの同意なく企業に渡すことはありません。</div>
+      <div class="warn">これはデモ版です。実在の個人情報は入力せず、「入力例を使う」でお試しください。</div>
+      ${state.uid ? '' : '<div class="warn">LINEアプリの中で開くと、AI下書きとPDF作成まで試せます。</div>'}`;
+  }
+  function stepBasic() {
+    return `<h1>基本情報</h1><p class="lead">履歴書の上の欄に入る内容です。</p>
+      ${input('basic.name', '氏名', 'text', { ph: '山田 花子', ac: 'name' })}
+      ${input('basic.kana', 'ふりがな', 'text', { ph: 'やまだ はなこ' })}
+      ${input('basic.birth', '生年月日', 'date')}
+      ${input('basic.address', '住所', 'text', { ph: '東京都〇〇区〇〇1-2-3', ac: 'street-address' })}
+      <div class="two">${input('basic.phone', '電話番号', 'tel', { ac: 'tel' })}${input('basic.email', 'メール', 'email', { ac: 'email' })}</div>
+      <div class="err" id="err"></div>`;
+  }
+  function stepEdu() {
+    return `<h1>学歴</h1><p class="lead">最終学歴を入力してください。高校から書きたい場合は「学校を追加」から。</p>
+      ${state.data.edu.map((e, i) => `<div class="card"><h3>学校 ${i + 1}${i ? `<button type="button" class="link del" data-del-edu="${i}">削除</button>` : ''}</h3>
+        ${input(`edu.${i}.school`, '学校名', 'text', { ph: '〇〇短期大学' })}
+        ${input(`edu.${i}.dept`, '学部・学科', 'text', { ph: '保育学科', hint: '任意' })}
+        <div class="two">${input(`edu.${i}.entered`, '入学', 'month')}${input(`edu.${i}.graduated`, '卒業', 'month')}</div></div>`).join('')}
+      ${state.data.edu.length < 3 ? '<button type="button" class="link" id="addEdu">＋ 学校を追加</button>' : ''}`;
+  }
+  function stepLicense() {
+    const d = state.data;
+    return `<h1>資格・免許</h1><p class="lead">持っているものを選んでください。取得見込みでもOKです。</p>
+      ${chips('licenses', '資格・免許', OPT.licenses)}
+      ${d.licenses.map(l => input(`licenseDate.${l}`, `${l} の取得年月`, 'month', { hint: '任意' })).join('')}
+      ${input('otherLicense', 'その他の資格', 'text', { ph: '例：ベビーシッター資格', hint: '任意' })}`;
+  }
+  function stepJobs() {
+    return `<h1>職歴</h1><p class="lead">新しい順でも古い順でもOK。保育以外のお仕事も入れられます。</p>
+      ${state.data.jobs.map((j, i) => `<div class="card"><h3>職歴 ${i + 1}${state.data.jobs.length > 1 ? `<button type="button" class="link del" data-del-job="${i}">削除</button>` : ''}</h3>
+        ${input(`jobs.${i}.org`, '法人名・園名', 'text', { ph: '社会福祉法人〇〇会 〇〇保育園' })}
+        <div class="two">${select(`jobs.${i}.facility`, '施設の種類', OPT.facility)}${select(`jobs.${i}.capacity`, '定員', OPT.capacity)}</div>
+        ${chips(`jobs.${i}.employment`, '雇用形態', OPT.employment, true)}
+        <div class="two">${input(`jobs.${i}.start`, '入職', 'month')}${j.current ? '<div class="field"><span class="lbl">退職</span><p style="margin:10px 0">現在も在籍</p></div>' : input(`jobs.${i}.end`, '退職', 'month')}</div>
+        <label class="check"><input type="checkbox" data-current="${i}" ${j.current ? 'checked' : ''}>現在も在籍している</label>
+        ${chips(`jobs.${i}.classes`, '担当したクラス', OPT.classes)}
+        <div class="two">${input(`jobs.${i}.classSize`, 'クラスの人数', 'text', { ph: '18', hint: '任意' })}${select(`jobs.${i}.team`, '担任の形', OPT.team)}</div>
+        ${chips(`jobs.${i}.role`, '役職', OPT.role, true)}
+        ${chips(`jobs.${i}.duties`, '担当した業務', OPT.duties)}
+        ${textarea(`jobs.${i}.note`, 'ひとこと（工夫したこと・成果）', '例：運動会の担当として、年齢ごとの競技を見直した', 2)}
+      </div>`).join('')}
+      ${state.data.jobs.length < 4 ? '<button type="button" class="link" id="addJob">＋ 職歴を追加</button>' : ''}`;
+  }
+  function stepSkills() {
+    return `<h1>得意なこと</h1><p class="lead">自己PRの材料になります。当てはまるものを選んでください。</p>
+      ${chips('skills.strengths', '得意な保育・スキル', OPT.strengths)}
+      ${chips('skills.values', '保育で大切にしていること', OPT.values)}
+      ${textarea('skills.note', 'ほかに伝えたいこと', '例：子どもの小さな変化に気づけるよう、毎日の記録を大切にしています', 3)}
+      ${textarea('wish.request', '本人希望記入欄', '', 2)}`;
+  }
+  function stepAI() {
+    const t = state.data.texts;
+    if (state.busy) return `<h1>AIが下書きしています</h1><div class="spinner" role="status" aria-label="作成中"></div><p class="center lead">入力内容から文章をつくっています。20秒ほどお待ちください。</p>`;
+    if (!t) return `<h1>文章をAIで下書きします</h1>
+      <p class="lead">職務要約、各職歴の業務内容、活かせるスキル、自己PRを作ります。入力した内容だけをもとに書き、事実にないことは加えません。</p>
+      <div class="note">下書きのあと、すべての文章を自由に直せます。</div><div class="err" id="err"></div>`;
+    return `<h1>下書きを確認・修正</h1><p class="lead">気になるところは直接書き換えてください。</p>
+      <div class="ai"><span class="tag">職務要約</span>${textarea('texts.summary', '', '', 5)}</div>
+      ${(t.jobs || []).map((jt, i) => `<div class="ai"><span class="tag">業務内容：${esc((state.data.jobs[i] || {}).org || '職歴' + (i + 1))}</span>${textarea(`texts.jobs.${i}`, '', '', 5)}</div>`).join('')}
+      <div class="ai"><span class="tag">活かせる経験・スキル</span>${textarea('texts.skills', '', '', 4)}</div>
+      <div class="ai"><span class="tag">自己PR</span>${textarea('texts.pr', '', '', 8)}</div>
+      <button type="button" class="link" id="redo">もう一度AIで作り直す</button><div class="err" id="err"></div>`;
+  }
+  function stepDone() {
+    if (state.busy) return `<h1>書類を作成しています</h1><div class="spinner" role="status" aria-label="作成中"></div><p class="center lead">PDFを作っています。少しお待ちください。</p>`;
+    const r = state.result;
+    if (!r) return '<p class="lead">書類を作成できませんでした。前の画面に戻ってもう一度お試しください。</p>';
+    return `<div class="center"><div class="done">✓</div><h1>書類が完成しました</h1>
+      <p class="lead">PDFを開いて、保存や印刷ができます。担当のキャリアアドバイザーによる無料の添削も受けられます。</p></div>
+      <div class="preview" id="pv"><div class="scaler" id="scaler">${r.html}</div></div>`;
+  }
+
+  /* ---------- 画面の切り替え ---------- */
+  function render() {
+    const s = state.step;
+    document.getElementById('top').hidden = s === 0;
+    document.getElementById('stepLabel').textContent = STEPS[s];
+    document.getElementById('stepCount').textContent = s ? `${s} / ${STEPS.length - 1}` : '';
+    document.getElementById('bar').style.width = (s / (STEPS.length - 1) * 100) + '%';
+    app.innerHTML = [stepIntro, stepBasic, stepEdu, stepLicense, stepJobs, stepSkills, stepAI, stepDone][s]();
+    renderNav();
+    bind();
+    if (s === 7 && state.result) fitPreview();
+    window.scrollTo(0, 0);
+  }
+  function renderNav() {
+    const s = state.step; nav.hidden = false;
+    const back = s > 0 && s < 7 ? '<button class="btn sub" id="back">戻る</button>' : '';
+    let main;
+    if (s === 0) main = '<button class="btn sub" id="sample" style="flex:1">入力例を使う</button><button class="btn primary" id="next">はじめる</button>';
+    else if (s < 6) main = `<button class="btn primary" id="next">次へ</button>`;
+    else if (s === 6) main = state.data.texts ? '<button class="btn warm" id="make" ' + (state.busy ? 'disabled' : '') + '>この内容で書類をつくる</button>' : `<button class="btn primary" id="draft" ${state.busy ? 'disabled' : ''}>AIで下書きする</button>`;
+    else main = state.result ? '<button class="btn sub" id="toChat" style="flex:1">添削を依頼</button><button class="btn primary" id="pdf">PDFを開く</button>' : '';
+    nav.innerHTML = s === 0 ? main : back + main;
+  }
+  function bind() {
+    app.querySelectorAll('[data-path]').forEach(el => { const f = () => setPath(el.dataset.path, el.value); el.addEventListener('input', f); el.addEventListener('change', f); });
+    app.querySelectorAll('[data-chip]').forEach(el => el.addEventListener('click', () => {
+      const p = el.dataset.chip, v = el.dataset.val;
+      if (el.dataset.single) setPath(p, v);
+      else { const cur = (getPath(p) || []).slice(); const i = cur.indexOf(v); i < 0 ? cur.push(v) : cur.splice(i, 1); setPath(p, cur); }
+      if (p === 'licenses') render(); else { if (el.dataset.single) el.parentNode.querySelectorAll('.chip').forEach(c => c.setAttribute('aria-pressed', 'false')); el.setAttribute('aria-pressed', el.dataset.single ? 'true' : String(el.getAttribute('aria-pressed') !== 'true')); }
+    }));
+    app.querySelectorAll('[data-current]').forEach(el => el.addEventListener('change', () => { const j = state.data.jobs[+el.dataset.current]; j.current = el.checked; if (el.checked) j.end = ''; save(); render(); }));
+    app.querySelectorAll('[data-del-job]').forEach(el => el.addEventListener('click', () => { state.data.jobs.splice(+el.dataset.delJob, 1); state.data.texts = null; save(); render(); }));
+    app.querySelectorAll('[data-del-edu]').forEach(el => el.addEventListener('click', () => { state.data.edu.splice(+el.dataset.delEdu, 1); save(); render(); }));
+    on('addJob', () => { state.data.jobs.push(emptyJob()); state.data.texts = null; save(); render(); });
+    on('addEdu', () => { state.data.edu.push({ school: '', dept: '', entered: '', graduated: '' }); save(); render(); });
+    on('redo', () => { state.data.texts = null; save(); draft(); });
+    on('back', () => { state.step--; render(); });
+    on('next', next);
+    on('sample', () => { state.data = JSON.parse(JSON.stringify(SAMPLE)); save(); state.step = 1; render(); });
+    on('draft', draft);
+    on('make', make);
+    on('pdf', () => openPdf());
+    on('toChat', () => toChat());
+  }
+  const on = (id, fn) => { const el = document.getElementById(id); if (el) el.onclick = fn; };
+  const showErr = m => { const e = document.getElementById('err'); if (e) e.textContent = m; };
+
+  function next() {
+    if (state.step === 1) {
+      const b = state.data.basic;
+      if (!b.name.trim() || !b.kana.trim()) { showErr('氏名とふりがなを入力してください'); return; }
+    }
+    state.step++; render();
+  }
+  async function draft() {
+    if (!state.uid) { showErr('AI下書きは、LINEアプリの中で開いたときに使えます'); return; }
+    state.busy = true; render();
+    try {
+      const j = await api('draft', { data: strip(state.data) });
+      state.data.texts = { summary: j.texts.summary, jobs: j.texts.jobs, skills: j.texts.skills, pr: j.texts.pr };
+      save();
+    } catch (e) { state.busy = false; render(); showErr(e.message); return; }
+    state.busy = false; render();
+  }
+  async function make() {
+    state.step = 7; state.busy = true; render();
+    try { state.result = await api('save', { data: state.data }); }
+    catch (e) { state.busy = false; state.step = 6; render(); showErr(e.message); return; }
+    state.busy = false; render();
+  }
+  const strip = d => { const c = JSON.parse(JSON.stringify(d)); delete c.texts; return c; };
+  function openPdf() {
+    const url = state.result && state.result.pdfUrl;
+    if (!url) return;
+    if (state.inClient) liff.openWindow({ url, external: true }); else window.open(url, '_blank');
+  }
+  async function toChat() {
+    const text = '履歴書と職務経歴書を作成しました。添削をお願いします';
+    if (state.inClient) { try { await liff.sendMessages([{ type: 'text', text }]); liff.closeWindow(); return; } catch (e) { /* 予備へ */ } }
+    if (cfg.oaId) location.href = `https://line.me/R/oaMessage/${cfg.oaId}/?${encodeURIComponent(text)}`;
+  }
+  function fitPreview() {
+    const pv = document.getElementById('pv'), sc = document.getElementById('scaler');
+    if (!pv || !sc) return;
+    const w = 794; // A4 幅（px）
+    sc.style.width = w + 'px';
+    const k = pv.clientWidth / w;
+    sc.style.transform = `scale(${k})`;
+    pv.style.height = (sc.scrollHeight * k) + 'px';
+  }
+  window.addEventListener('resize', () => { if (state.step === 7) fitPreview(); });
+
+  async function start() {
+    try {
+      if (cfg.liffId && window.liff) {
+        await liff.init({ liffId: cfg.liffId });
+        state.inClient = liff.isInClient();
+        if (liff.isLoggedIn()) state.uid = (await liff.getProfile()).userId;
+      }
+    } catch (e) { console.warn('LIFF init failed', e); }
+    if (state.uid) {
+      try { // 以前の入力をサーバーから復元（スマホに下書きがない場合）
+        const j = await api('load');
+        if (j.data && !load()) { state.data = Object.assign(blank(), j.data); save(); }
+      } catch (e) { /* 初回など */ }
+    }
+    render();
+  }
+  start();
+})();
+</script>
+</body>
+</html>
