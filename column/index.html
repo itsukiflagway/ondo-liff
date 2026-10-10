@@ -42,6 +42,7 @@ article blockquote::before{content:"POINT";display:block;font-size:11px;font-wei
 .btn+.btn{margin-top:10px}
 .btn.primary{background:var(--warm);color:#fff}
 .btn.ghost{background:transparent;color:#fff;border:1.5px solid rgba(255,255,255,.45)}
+.btn:disabled{opacity:.6}
 .btn:focus-visible{outline:3px solid #F3B44B;outline-offset:2px}
 .note{font-size:12px;color:#C9D6D1;margin:12px 0 0;text-align:center}
 .related{margin:32px 0}
@@ -120,13 +121,30 @@ footer{margin:28px 0 36px;font-size:12px;color:var(--muted);text-align:center;li
   window.addEventListener('pagehide', () => { if (state.col) track('column_read', readStats()); });
   window.addEventListener('scroll', onScroll, { passive: true });
 
-  function sendToChat(text, cta) {
+  /* トークにメッセージを送る。
+   * 1) LIFF 内なら liff.sendMessages で送信して閉じる
+   * 2) 送れない場合（権限なし・LIFF 外で開いた等）は、公式アカウントのトークを入力済みで開く */
+  function oaMessageUrl(text) {
+    return cfg.oaId ? `https://line.me/R/oaMessage/${cfg.oaId}/?${encodeURIComponent(text)}` : '';
+  }
+  async function sendToChat(text, cta, btn) {
     track('column_cta', Object.assign({ cta }, readStats()));
-    if (state.inClient && liff.isApiAvailable && liff.isApiAvailable('sendMessages') !== false) {
-      liff.sendMessages([{ type: 'text', text }]).then(() => liff.closeWindow()).catch(() => liff.closeWindow());
-    } else if (state.inClient) {
-      liff.closeWindow();
+    if (btn) { btn.disabled = true; btn.dataset.label = btn.textContent; btn.textContent = '送信しています…'; }
+    if (state.inClient) {
+      try {
+        await liff.sendMessages([{ type: 'text', text }]);
+        liff.closeWindow();
+        return;
+      } catch (e) {
+        console.warn('sendMessages failed', e);
+      }
     }
+    const url = oaMessageUrl(text);
+    if (url) {
+      location.href = url; // LINE のトーク画面が開き、メッセージが入力済みになる
+      return;
+    }
+    if (btn) { btn.disabled = false; btn.textContent = btn.dataset.label; }
   }
 
   function related(idx, col) {
@@ -160,13 +178,14 @@ footer{margin:28px 0 36px;font-size:12px;color:var(--muted);text-align:center;li
           <p>LINEで気軽に相談できます。今の悩みを話すだけでも大丈夫です。</p>
           <button class="btn primary" id="consult">キャリアアドバイザーに相談する</button>
           <button class="btn ghost" id="jobs">${esc(jobText)}</button>
-          ${state.inClient ? '' : '<p class="note">LINEアプリで開くと、ここから相談や求人の確認ができます</p>'}
+          <p class="note">ボタンを押すと、LINEのトークにメッセージが送られます</p>
         </section>
         <section class="related"><h2>あわせて読みたい</h2>${related(idx, col).map(c => cardHtml(idx, c)).join('')}</section>
         <footer>ONDO編集部<br>※このコラムはデモ用のサンプルです</footer>
       </div>`;
-    document.getElementById('consult').onclick = () => sendToChat('キャリアアドバイザーに相談したい', 'consult');
-    document.getElementById('jobs').onclick = () => sendToChat(jobText, 'jobs');
+    const bc = document.getElementById('consult'), bj = document.getElementById('jobs');
+    bc.onclick = () => sendToChat('キャリアアドバイザーに相談したい', 'consult', bc);
+    bj.onclick = () => sendToChat(jobText, 'jobs', bj);
     window.scrollTo(0, 0); onScroll();
     track('column_open');
   }
@@ -191,6 +210,12 @@ footer{margin:28px 0 36px;font-size:12px;color:var(--muted);text-align:center;li
         if (liff.isLoggedIn()) { const p = await liff.getProfile(); state.uid = p.userId; }
       }
     } catch (e) { console.warn('LIFF init failed', e); }
+    if (new URLSearchParams(location.search).get('debug')) {
+      const d = document.createElement('pre');
+      d.style.cssText = 'font-size:11px;background:#FFF6D6;padding:8px;margin:0;white-space:pre-wrap';
+      d.textContent = `LIFF ID: ${cfg.liffId || '(未設定)'}\nLINE内（LIFF）: ${state.inClient}\nログイン: ${window.liff && liff.isLoggedIn ? liff.isLoggedIn() : '-'}\nユーザーID取得: ${state.uid ? 'OK' : 'なし'}\nGAS: ${cfg.gasUrl ? '設定済み' : '(未設定)'}`;
+      document.body.prepend(d);
+    }
     try {
       const idx = await fetch('../columns/index.json', { cache: 'no-cache' }).then(r => r.json());
       const id = new URLSearchParams(location.search).get('id'); // LIFF の初期化後に読む
