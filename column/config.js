@@ -4,6 +4,6 @@
  * どちらも空のままでも、ブラウザで記事は表示できます（計測と LINE への送信だけ止まります）
  */
 window.ONDO_CONFIG = {
-  liffId: '',
-  gasUrl: ''
+  liffId: '2011959892-pj9lk5AH',
+  gasUrl: 'https://script.google.com/macros/s/AKfycbwKtjp_YTM3ZyMcWDC33-BmdM57c1JW_4cbJrrZlavfVtF7N8pKx-b4OBgARNhOvnN2Ng/exec'
 };
