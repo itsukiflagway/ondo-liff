@@ -43,6 +43,9 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--green)}
 .note b{color:var(--ink)}
 .warn{font-size:13px;color:#7A3B12;background:var(--warm-soft);border-radius:10px;padding:12px 14px;margin:14px 0}
 .err{color:var(--danger);font-size:13px;margin-top:6px}
+.cnt{font-size:12px;color:var(--muted);text-align:right;margin-top:4px;font-variant-numeric:tabular-nums}
+.cnt .over{color:var(--danger);font-weight:700}
+.preview .rs-doc .pg{margin:0 0 6mm!important;box-shadow:0 1px 4px rgba(0,0,0,.15)}
 .check{display:flex;gap:10px;align-items:center;font-size:14px;margin-top:8px}
 .check input{width:20px;height:20px;accent-color:var(--green)}
 .bottom{position:fixed;left:0;right:0;bottom:0;background:rgba(255,255,255,.96);border-top:1px solid var(--line);padding:12px 20px calc(12px + env(safe-area-inset-bottom,0px));display:flex;gap:10px;z-index:6}
@@ -97,6 +100,8 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--green)}
     strengths: ['ピアノ', '製作', '運動遊び', '絵本・読み聞かせ', 'リトミック', '手遊び・歌', '自然遊び', '食育', '障害児保育', '保護者対応', 'ICT'],
     values: ['子どもの主体性を大切にする', '一人ひとりに寄り添う', '安全・安心な環境づくり', '保護者との信頼関係', 'チームで保育する', '遊びを通した学び']
   };
+  /* 書類のレイアウトに収めるための上限（サーバー側と同じ値） */
+  const LIMITS = { summary: { max: 200 }, pr: { max: 400 }, skills: { lines: 5, max: 300 }, job: { lines: 5, max: 250 }, request: { max: 100 } };
   const STEPS = ['はじめに', '基本情報', '学歴', '資格', '職歴', '得意なこと', 'AI下書き', '完成'];
 
   const emptyJob = () => ({ org: '', facility: '', capacity: '', employment: '正社員', start: '', end: '', current: false, classes: [], classSize: '', team: '', role: 'なし', duties: [], note: '' });
@@ -164,7 +169,15 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--green)}
       return `<button type="button" class="chip" data-chip="${path}" data-val="${esc(o)}" data-single="${single ? 1 : ''}" aria-pressed="${on}">${esc(o)}</button>`;
     }).join('')}</div></div>`;
   };
-  const textarea = (path, label, ph, rows) => `<div class="field"><label for="f_${path}">${label}</label><textarea id="f_${path}" data-path="${path}" rows="${rows || 4}" placeholder="${esc(ph || '')}">${esc(getPath(path))}</textarea></div>`;
+  const textarea = (path, label, ph, rows, lim, maxlength) => `<div class="field">${label ? `<label for="f_${path}">${label}</label>` : ''}<textarea id="f_${path}" data-path="${path}" rows="${rows || 4}" placeholder="${esc(ph || '')}" ${maxlength ? `maxlength="${maxlength}"` : ''} ${lim ? `data-lim='${JSON.stringify(lim)}'` : ''}>${esc(getPath(path))}</textarea>${lim ? `<div class="cnt" id="c_${path}">${countText(getPath(path), lim)}</div>` : ''}</div>`;
+  const lineCount = v => String(v || '').split('\n').filter(x => x.trim()).length;
+  const overLimit = (v, lim) => (lim.max && String(v || '').length > lim.max) || (lim.lines && lineCount(v) > lim.lines);
+  const countText = (v, lim) => {
+    const parts = [];
+    if (lim.max) parts.push(`${String(v || '').length} / ${lim.max}字`);
+    if (lim.lines) parts.push(`${lineCount(v)} / ${lim.lines}行`);
+    return `<span class="${overLimit(v, lim) ? 'over' : ''}">${parts.join('　')}${overLimit(v, lim) ? '　上限を超えています' : ''}</span>`;
+  };
 
   /* ---------- 各ステップ ---------- */
   function stepIntro() {
@@ -211,7 +224,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--green)}
         <div class="two">${input(`jobs.${i}.classSize`, 'クラスの人数', 'text', { ph: '18', hint: '任意' })}${select(`jobs.${i}.team`, '担任の形', OPT.team)}</div>
         ${chips(`jobs.${i}.role`, '役職', OPT.role, true)}
         ${chips(`jobs.${i}.duties`, '担当した業務', OPT.duties)}
-        ${textarea(`jobs.${i}.note`, 'ひとこと（工夫したこと・成果）', '例：運動会の担当として、年齢ごとの競技を見直した', 2)}
+        ${textarea(`jobs.${i}.note`, 'ひとこと（工夫したこと・成果）', '例：運動会の担当として、年齢ごとの競技を見直した', 2, { max: 60 }, 60)}
       </div>`).join('')}
       ${state.data.jobs.length < 4 ? '<button type="button" class="link" id="addJob">＋ 職歴を追加</button>' : ''}`;
   }
@@ -219,8 +232,8 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--green)}
     return `<h1>得意なこと</h1><p class="lead">自己PRの材料になります。当てはまるものを選んでください。</p>
       ${chips('skills.strengths', '得意な保育・スキル', OPT.strengths)}
       ${chips('skills.values', '保育で大切にしていること', OPT.values)}
-      ${textarea('skills.note', 'ほかに伝えたいこと', '例：子どもの小さな変化に気づけるよう、毎日の記録を大切にしています', 3)}
-      ${textarea('wish.request', '本人希望記入欄', '', 2)}`;
+      ${textarea('skills.note', 'ほかに伝えたいこと', '例：子どもの小さな変化に気づけるよう、毎日の記録を大切にしています', 3, { max: 100 }, 100)}
+      ${textarea('wish.request', '本人希望記入欄', '', 2, LIMITS.request, LIMITS.request.max)}`;
   }
   function stepAI() {
     const t = state.data.texts;
@@ -234,10 +247,11 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--green)}
         <p class="exh">自己PR</p><p>${esc(AI_EXAMPLE.pr)}</p>
         <p class="exs">※入力した事実だけをもとに書き、ない経験や数字は加えません</p></details>` : '';
     return `<h1>下書きを確認・修正</h1><p class="lead">気になるところは直接書き換えてください。</p>${demoNote}
-      <div class="ai"><span class="tag">職務要約</span>${textarea('texts.summary', '', '', 5)}</div>
-      ${(t.jobs || []).map((jt, i) => `<div class="ai"><span class="tag">業務内容：${esc((state.data.jobs[i] || {}).org || '職歴' + (i + 1))}</span>${textarea(`texts.jobs.${i}`, '', '', 5)}</div>`).join('')}
-      <div class="ai"><span class="tag">活かせる経験・スキル</span>${textarea('texts.skills', '', '', 4)}</div>
-      <div class="ai"><span class="tag">自己PR</span>${textarea('texts.pr', '', '', 8)}</div>
+      <div class="ai"><span class="tag">職務要約</span>${textarea('texts.summary', '', '', 5, LIMITS.summary)}</div>
+      ${(t.jobs || []).map((jt, i) => `<div class="ai"><span class="tag">業務内容：${esc((state.data.jobs[i] || {}).org || '職歴' + (i + 1))}</span>${textarea(`texts.jobs.${i}`, '', '', 5, LIMITS.job)}</div>`).join('')}
+      <div class="ai"><span class="tag">活かせる経験・スキル</span>${textarea('texts.skills', '', '', 4, LIMITS.skills)}</div>
+      <div class="ai"><span class="tag">自己PR（履歴書の志望動機欄にも使います）</span>${textarea('texts.pr', '', '', 8, LIMITS.pr)}</div>
+      <p class="lead" style="font-size:13px">書類がきれいに収まるよう、文字数の上限を設けています。</p>
       <button type="button" class="link" id="redo">もう一度AIで作り直す</button><div class="err" id="err"></div>`;
   }
   function stepDone() {
@@ -273,7 +287,13 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--green)}
     nav.innerHTML = s === 0 ? main : back + main;
   }
   function bind() {
-    app.querySelectorAll('[data-path]').forEach(el => { const f = () => setPath(el.dataset.path, el.value); el.addEventListener('input', f); el.addEventListener('change', f); });
+    app.querySelectorAll('[data-path]').forEach(el => {
+      const f = () => {
+        setPath(el.dataset.path, el.value);
+        if (el.dataset.lim) { const c = document.getElementById('c_' + el.dataset.path); if (c) c.innerHTML = countText(el.value, JSON.parse(el.dataset.lim)); }
+      };
+      el.addEventListener('input', f); el.addEventListener('change', f);
+    });
     app.querySelectorAll('[data-chip]').forEach(el => el.addEventListener('click', () => {
       const p = el.dataset.chip, v = el.dataset.val;
       if (el.dataset.single) setPath(p, v);
@@ -315,6 +335,8 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--green)}
     state.busy = false; render();
   }
   async function make() {
+    const over = [...app.querySelectorAll('textarea[data-lim]')].filter(el => overLimit(el.value, JSON.parse(el.dataset.lim)));
+    if (over.length) { showErr('文字数・行数の上限を超えている欄があります。赤字の欄を短くしてください'); over[0].focus(); return; }
     state.step = 7; state.busy = true; render();
     try { state.result = await api('save', { data: state.data }); }
     catch (e) { state.busy = false; state.step = 6; render(); showErr(e.message); return; }
@@ -334,8 +356,9 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--green)}
   function fitPreview() {
     const pv = document.getElementById('pv'), sc = document.getElementById('scaler');
     if (!pv || !sc) return;
-    const w = 794; // A4 幅（px）
-    sc.style.width = w + 'px';
+    sc.style.width = 'max-content';
+    sc.style.padding = '12px';
+    const w = sc.scrollWidth;
     const k = pv.clientWidth / w;
     sc.style.transform = `scale(${k})`;
     pv.style.height = (sc.scrollHeight * k) + 'px';
