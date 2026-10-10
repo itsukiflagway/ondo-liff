@@ -58,6 +58,11 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--green)}
 @keyframes spin{to{transform:rotate(360deg)}}
 @media (prefers-reduced-motion:reduce){.spinner{animation:none}}
 .center{text-align:center}
+.ex{border:1.5px dashed var(--green);border-radius:12px;padding:10px 14px;margin:14px 0;background:#FBFEFC;font-size:14px}
+.ex summary{font-weight:700;color:var(--green);cursor:pointer}
+.ex .exh{font-size:12px;font-weight:700;color:var(--green);margin:12px 0 2px}
+.ex p{margin:4px 0;line-height:1.75}
+.ex .exs{font-size:12px;color:var(--muted);margin-top:10px}
 .preview{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#F7F7F5;margin:16px 0}
 .preview .scaler{transform-origin:top left}
 .done{font-size:44px;line-height:1;margin:18px 0 4px;color:var(--green)}
@@ -115,6 +120,12 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--green)}
     skills: { strengths: ['ピアノ', '製作', '絵本・読み聞かせ'], values: ['一人ひとりに寄り添う', 'チームで保育する'], note: '' },
     wish: { motivation: '', request: '貴園の規定に従います。' },
     texts: null
+  };
+
+  /* デモ用：AI を有効にした場合の出力例（入力例のデータをもとに作成） */
+  const AI_EXAMPLE = {
+    summary: '短期大学卒業後、2015年より保育士として勤務。認可保育園（定員90〜119名）で1歳児・2歳児・4歳児の複数担任を経験し、リーダーとして行事の企画・運営や実習生の指導を担当。2020年からは小規模保育園の副主任として0・1歳児の乳児保育に携わり、新人指導や連絡帳アプリの導入を推進している。',
+    pr: '私の強みは、一人ひとりの子どもの姿に寄り添いながら、チームで保育の質を高めていけることです。認可保育園では運動会の担当として、年齢ごとの発達に合わせて競技を見直すことを提案し、子どもたちが無理なく楽しめる行事づくりに取り組みました。現在の小規模保育園では副主任として連絡帳アプリの導入を担当し、記録にかかる時間を短くすることで、子どもと向き合う時間を確保できるよう工夫しています。得意なピアノや製作、絵本の読み聞かせも日々の保育に取り入れてきました。これまでの経験を活かし、貴園でも子ども・保護者・職員が安心できる保育に貢献したいと考えています。'
   };
 
   const state = { step: 0, uid: null, inClient: false, data: load() || blank(), busy: false, result: null };
@@ -217,7 +228,12 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--green)}
     if (!t) return `<h1>文章をAIで下書きします</h1>
       <p class="lead">職務要約、各職歴の業務内容、活かせるスキル、自己PRを作ります。入力した内容だけをもとに書き、事実にないことは加えません。</p>
       <div class="note">下書きのあと、すべての文章を自由に直せます。</div><div class="err" id="err"></div>`;
-    return `<h1>下書きを確認・修正</h1><p class="lead">気になるところは直接書き換えてください。</p>
+    const demoNote = t.by === 'template' ? `<div class="warn"><b>デモ版のため、今回はAIを使わず、入力内容を組み立てて下書きしています。</b><br>本番ではAIが、担当クラスや工夫したことを踏まえて、より自然で具体的な文章に仕上げます。</div>
+      <details class="ex"><summary>AIを使うと、こうなります（入力例の山田 花子さんの場合）</summary>
+        <p class="exh">職務要約</p><p>${esc(AI_EXAMPLE.summary)}</p>
+        <p class="exh">自己PR</p><p>${esc(AI_EXAMPLE.pr)}</p>
+        <p class="exs">※入力した事実だけをもとに書き、ない経験や数字は加えません</p></details>` : '';
+    return `<h1>下書きを確認・修正</h1><p class="lead">気になるところは直接書き換えてください。</p>${demoNote}
       <div class="ai"><span class="tag">職務要約</span>${textarea('texts.summary', '', '', 5)}</div>
       ${(t.jobs || []).map((jt, i) => `<div class="ai"><span class="tag">業務内容：${esc((state.data.jobs[i] || {}).org || '職歴' + (i + 1))}</span>${textarea(`texts.jobs.${i}`, '', '', 5)}</div>`).join('')}
       <div class="ai"><span class="tag">活かせる経験・スキル</span>${textarea('texts.skills', '', '', 4)}</div>
@@ -293,7 +309,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--green)}
     state.busy = true; render();
     try {
       const j = await api('draft', { data: strip(state.data) });
-      state.data.texts = { summary: j.texts.summary, jobs: j.texts.jobs, skills: j.texts.skills, pr: j.texts.pr };
+      state.data.texts = { summary: j.texts.summary, jobs: j.texts.jobs, skills: j.texts.skills, pr: j.texts.pr, by: j.texts.by };
       save();
     } catch (e) { state.busy = false; render(); showErr(e.message); return; }
     state.busy = false; render();
