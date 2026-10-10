@@ -33,6 +33,7 @@ article ul,article ol{margin:12px 0;padding-left:1.4em}
 article li{margin:6px 0}
 article li::marker{color:var(--accent)}
 article strong{background:linear-gradient(transparent 62%,var(--warm-soft) 62%);font-weight:700;color:var(--ink)}
+article a{color:var(--accent);text-decoration:underline;text-underline-offset:3px;word-break:break-all}
 article blockquote{margin:20px 0;padding:14px 16px;background:var(--soft);border-radius:10px;font-size:14.5px;color:var(--text)}
 article blockquote::before{content:"POINT";display:block;font-size:11px;font-weight:700;color:var(--accent);letter-spacing:.12em;margin-bottom:2px}
 .cta{margin:36px 0 8px;padding:22px 20px;border-radius:16px;background:var(--ink);color:#fff}
@@ -71,7 +72,9 @@ footer{margin:28px 0 36px;font-size:12px;color:var(--muted);text-align:center;li
   const state = { uid: null, inClient: false, col: null, openId: Math.random().toString(36).slice(2), visibleMs: 0, since: Date.now(), maxScroll: 0, sent: false };
 
   const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-  const inline = s => esc(s).replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+  const inline = s => esc(s)
+    .replace(/\[([^\]]+)\]\((https:\/\/[^)\s]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>')
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
 
   /* 簡易 Markdown：## / ### / - / 1. / > / 段落 / **強調** */
   function md(src) {
@@ -163,12 +166,12 @@ footer{margin:28px 0 36px;font-size:12px;color:var(--muted);text-align:center;li
     document.documentElement.style.setProperty('--accent', col.color || '#0F7B5F');
     document.title = col.title + '｜ONDO コラム';
     const body = await fetch('../columns/' + encodeURIComponent(col.id) + '.md', { cache: 'no-cache' }).then(r => { if (!r.ok) throw new Error(r.status); return r.text(); });
-    const jobText = col.jobHint ? `${col.jobHint}の求人を見る` : '求人を見る';
+    const jobText = col.jobLabel || '求人を見る';
     app.innerHTML = `
       <header class="band"><div class="wrap">
         <span class="cat">${esc(catName(idx, col))}｜${esc(col.sub)}</span>
         <h1>${esc(col.title)}</h1>
-        <div class="meta"><span>${col.minutes}分で読めます</span><span>ONDO編集部</span></div>
+        <div class="meta"><span>${col.minutes}分で読めます</span><span>ONDO編集部</span>${col.updated ? `<span>情報は${esc(col.updated)}時点</span>` : ''}</div>
         <p class="lead">${esc(col.lead)}</p>
       </div></header>
       <div class="wrap">
