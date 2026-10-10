@@ -34,6 +34,17 @@ article li{margin:6px 0}
 article li::marker{color:var(--accent)}
 article strong{background:linear-gradient(transparent 62%,var(--warm-soft) 62%);font-weight:700;color:var(--ink)}
 article a{color:var(--accent);text-decoration:underline;text-underline-offset:3px;word-break:break-all}
+article figure{margin:24px 0;padding:0}
+article figure img{width:100%;height:auto;border-radius:10px;display:block}
+article figcaption{font-size:12px;color:var(--muted);margin-top:6px;line-height:1.6}
+.chart{margin:24px 0;padding:16px;border:1px solid var(--line);border-radius:12px}
+.chart .ct{font-size:14px;font-weight:700;color:var(--ink);margin:0 0 12px;line-height:1.5}
+.bar{display:grid;grid-template-columns:minmax(0,7.5em) 1fr;gap:4px 10px;align-items:center;margin:8px 0}
+.bar .bl{font-size:12.5px;line-height:1.4;color:var(--text)}
+.bar .bt{position:relative;height:22px;background:var(--soft);border-radius:4px;overflow:hidden}
+.bar .bf{position:absolute;inset:0 auto 0 0;background:var(--accent);border-radius:4px}
+.bar .bv{position:absolute;top:0;bottom:0;display:flex;align-items:center;font-size:12px;font-weight:700;font-variant-numeric:tabular-nums}
+.chart .cs{font-size:11px;color:var(--muted);margin:10px 0 0;line-height:1.6}
 article blockquote{margin:20px 0;padding:14px 16px;background:var(--soft);border-radius:10px;font-size:14.5px;color:var(--text)}
 article blockquote::before{content:"POINT";display:block;font-size:11px;font-weight:700;color:var(--accent);letter-spacing:.12em;margin-bottom:2px}
 .cta{margin:36px 0 8px;padding:22px 20px;border-radius:16px;background:var(--ink);color:#fff}
@@ -81,9 +92,23 @@ footer{margin:28px 0 36px;font-size:12px;color:var(--muted);text-align:center;li
     const out = []; let list = null; let para = [];
     const flushPara = () => { if (para.length) { out.push('<p>' + inline(para.join('')) + '</p>'); para = []; } };
     const flushList = () => { if (list) { out.push(`<${list.tag}>${list.items.map(i => '<li>' + inline(i) + '</li>').join('')}</${list.tag}>`); list = null; } };
+    let chart = null;
     src.split(/\r?\n/).forEach(line => {
       const t = line.trim();
       let m;
+      if (chart) {
+        if (t === ':::') { out.push(renderChart(chart)); chart = null; return; }
+        if ((m = t.match(/^出典[:：]\s*(.*)$/))) { chart.source = m[1]; return; }
+        if ((m = t.match(/^(.+)\|\s*(-?[\d.]+)\s*$/))) chart.rows.push([m[1].trim(), parseFloat(m[2])]);
+        return;
+      }
+      if ((m = t.match(/^:::chart\s+(.*?)(?:\|(.*))?$/))) { flushPara(); flushList(); chart = { title: m[1], unit: (m[2] || '').trim(), rows: [], source: '' }; return; }
+      if ((m = t.match(/^!\[(.*?)\]\((\S+?)\)$/))) {
+        flushPara(); flushList();
+        const src2 = /^https:\/\//.test(m[2]) ? m[2] : '../columns/' + m[2];
+        out.push(`<figure><img src="${esc(src2)}" alt="${esc(m[1])}" loading="lazy">${m[1] ? `<figcaption>${esc(m[1])}</figcaption>` : ''}</figure>`);
+        return;
+      }
       if (!t) { flushPara(); flushList(); return; }
       if ((m = t.match(/^(#{2,3})\s+(.*)$/))) { flushPara(); flushList(); out.push(`<h${m[1].length}>${inline(m[2])}</h${m[1].length}>`); return; }
       if ((m = t.match(/^>\s?(.*)$/))) { flushPara(); flushList(); out.push('<blockquote>' + inline(m[1]) + '</blockquote>'); return; }
@@ -93,6 +118,20 @@ footer{margin:28px 0 36px;font-size:12px;color:var(--muted);text-align:center;li
     });
     flushPara(); flushList();
     return out.join('');
+  }
+
+  /* 横棒グラフ（:::chart タイトル|単位 … ::: ） */
+  function renderChart(c) {
+    const max = Math.max(...c.rows.map(r => r[1]), 0) || 1;
+    const dec = c.rows.some(r => !Number.isInteger(r[1])) ? 1 : 0;
+    const fmt = v => v.toFixed(dec) + c.unit;
+    const label = c.title + '：' + c.rows.map(r => `${r[0]} ${fmt(r[1])}`).join('、');
+    const bars = c.rows.map(([k, v]) => {
+      const w = Math.max(2, (v / max) * 100);
+      const inside = w > 55;
+      return `<div class="bl">${esc(k)}</div><div class="bt"><div class="bf" style="width:${w}%"></div><span class="bv" style="${inside ? `right:${100 - w}%;padding-right:6px;color:#fff` : `left:${w}%;padding-left:6px;color:var(--ink)`}">${esc(fmt(v))}</span></div>`;
+    }).join('');
+    return `<figure class="chart" role="img" aria-label="${esc(label)}"><p class="ct">${esc(c.title)}</p><div class="bar">${bars}</div>${c.source ? `<p class="cs">出典：${esc(c.source)}</p>` : ''}</figure>`;
   }
 
   /* 計測：開いた・読んだ時間・どこまで読んだか を GAS に送る */
