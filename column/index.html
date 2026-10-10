@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>ONDO コラム</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
+<script src="./config.js"></script>
+<script src="./theme.js"></script>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap">
 <style>
 /* 記事ページ：上に読了バー、カテゴリ帯、本文、相談・求人への導線、関連記事 */
@@ -68,6 +70,29 @@ article blockquote::before{content:"POINT";display:block;font-size:11px;font-wei
 footer{margin:28px 0 36px;font-size:12px;color:var(--muted);text-align:center;line-height:1.7}
 .skeleton{padding:40px 0;color:var(--muted);text-align:center;font-size:14px}
 .err{padding:40px 0;text-align:center}
+
+/* ===== 求職者向けデザイン（theme=friendly）：パステル × 手描き風 ===== */
+html.t-friendly{
+  --ink:#5A4636; --text:#5A4636; --muted:#9A8473; --line:#F0E2D3; --soft:#FFF1E4;
+  --green:#4E9C7A; --warm:#E8826F; --warm-soft:#FDE3D9; --bg:#FFFBF5; --accent:#4E9C7A;
+  --font:"Zen Maru Gothic","Hiragino Maru Gothic ProN","Hiragino Sans","Noto Sans JP",system-ui,sans-serif;
+}
+html.t-friendly body{background:var(--bg) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 .55 0 0 0 0 .42 0 0 0 0 .3 0 0 0 .06 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E")}
+html.t-friendly .band{background:transparent;border-bottom:3px dotted var(--line)}
+html.t-friendly .band .cat{background:var(--soft);padding:4px 12px;border-radius:999px}
+html.t-friendly article h2{border-bottom:none;padding:6px 0 6px 14px;border-left:6px solid var(--accent);border-radius:3px;background:linear-gradient(transparent 70%,var(--soft) 70%)}
+html.t-friendly .chart,html.t-friendly .card{border:2px dashed var(--line);border-radius:18px;background:#fff}
+html.t-friendly article blockquote{background:#fff;border:2px solid var(--soft);border-radius:18px}
+html.t-friendly article blockquote::before{content:"ポイント";letter-spacing:.06em}
+html.t-friendly .cta{background:#FDE9DD;color:var(--ink);border-radius:24px}
+html.t-friendly .cta h2{color:var(--ink)}
+html.t-friendly .cta p{color:var(--muted)}
+html.t-friendly .btn{border-radius:999px}
+html.t-friendly .btn.primary{background:var(--warm);box-shadow:0 4px 0 #D06C5A}
+html.t-friendly .btn.ghost{background:#fff;color:var(--ink);border:2px solid var(--line)}
+html.t-friendly .note{color:var(--muted)}
+html.t-friendly .cat,html.t-friendly .bar .bf,html.t-friendly li::marker{filter:saturate(.75) brightness(1.08)}
+html.t-friendly .progress{height:5px;border-radius:0 4px 4px 0}
 </style>
 </head>
 <body>
@@ -75,7 +100,6 @@ footer{margin:28px 0 36px;font-size:12px;color:var(--muted);text-align:center;li
 <main id="app"><div class="wrap skeleton">読み込んでいます…</div></main>
 
 <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-<script src="./config.js"></script>
 <script>
 (function () {
   const cfg = window.ONDO_CONFIG || {};
@@ -195,7 +219,9 @@ footer{margin:28px 0 36px;font-size:12px;color:var(--muted);text-align:center;li
     return same.slice(0, 3);
   }
   const catName = (idx, c) => (idx.categories[c.tpl] || {})[c.cat] || '';
-  const href = id => '?id=' + encodeURIComponent(id);
+  const href = id => '?id=' + encodeURIComponent(id) + (window.ONDO_THEME_QS || '');
+  const BRAND = window.ONDO_BRAND || 'ONDO';
+  const DEMO_NOTE = window.ONDO_THEME === 'friendly' ? '' : '<br>※このコラムはデモ用のサンプルです';
   const cardHtml = (idx, c) => `<a class="card" href="${href(c.id)}" style="--accent:${esc(c.color || '#0F7B5F')}"><span class="cat">${esc(catName(idx, c))}</span><b>${esc(c.title)}</b><span class="m">${c.minutes}分で読めます</span></a>`;
 
   async function renderArticle(idx, id) {
@@ -203,14 +229,14 @@ footer{margin:28px 0 36px;font-size:12px;color:var(--muted);text-align:center;li
     if (!col) return renderList(idx, 'お探しのコラムが見つかりませんでした。');
     state.col = col;
     document.documentElement.style.setProperty('--accent', col.color || '#0F7B5F');
-    document.title = col.title + '｜ONDO コラム';
+    document.title = col.title + '｜' + BRAND + ' コラム';
     const body = await fetch('../columns/' + encodeURIComponent(col.id) + '.md', { cache: 'no-cache' }).then(r => { if (!r.ok) throw new Error(r.status); return r.text(); });
     const jobText = col.jobLabel || '求人を見る';
     app.innerHTML = `
       <header class="band"><div class="wrap">
         <span class="cat">${esc(catName(idx, col))}｜${esc(col.sub)}</span>
         <h1>${esc(col.title)}</h1>
-        <div class="meta"><span>${col.minutes}分で読めます</span><span>ONDO編集部</span>${col.updated ? `<span>情報は${esc(col.updated)}時点</span>` : ''}</div>
+        <div class="meta"><span>${col.minutes}分で読めます</span><span>${esc(BRAND)}編集部</span>${col.updated ? `<span>情報は${esc(col.updated)}時点</span>` : ''}</div>
         <p class="lead">${esc(col.lead)}</p>
       </div></header>
       <div class="wrap">
@@ -223,7 +249,7 @@ footer{margin:28px 0 36px;font-size:12px;color:var(--muted);text-align:center;li
           <p class="note">ボタンを押すと、LINEのトークにメッセージが送られます</p>
         </section>
         <section class="related"><h2>あわせて読みたい</h2>${related(idx, col).map(c => cardHtml(idx, c)).join('')}</section>
-        <footer>ONDO編集部<br>※このコラムはデモ用のサンプルです</footer>
+        <footer>${esc(BRAND)}編集部${DEMO_NOTE}</footer>
       </div>`;
     const bc = document.getElementById('consult'), bj = document.getElementById('jobs');
     bc.onclick = () => sendToChat('キャリアアドバイザーに相談したい', 'consult', bc);
@@ -238,10 +264,10 @@ footer{margin:28px 0 36px;font-size:12px;color:var(--muted);text-align:center;li
     const cols = idx.columns.filter(c => c.tpl === tplId);
     const groups = Object.keys(cats).filter(k => cols.some(c => c.cat === k));
     app.innerHTML = `
-      <header class="band"><div class="wrap"><span class="cat">ONDO コラム</span><h1>働き方の悩み、ひとりで抱えていませんか？</h1>
+      <header class="band"><div class="wrap"><span class="cat">${esc(BRAND)} コラム</span><h1>働き方の悩み、ひとりで抱えていませんか？</h1>
       <p class="lead">${message ? esc(message) : '気になるテーマから読んでみてください。'}</p></div></header>
       <div class="wrap">${groups.map(k => `<div class="group">${esc(cats[k])}</div>` + cols.filter(c => c.cat === k).map(c => cardHtml(idx, c)).join('')).join('')}
-      <footer>ONDO編集部<br>※このコラムはデモ用のサンプルです</footer></div>`;
+      <footer>${esc(BRAND)}編集部${DEMO_NOTE}</footer></div>`;
   }
 
   async function start() {

@@ -3,8 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>書類をつくる｜ONDO</title>
+<title>書類をつくる</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
+<script src="../config.js"></script>
+<script src="../theme.js"></script>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap">
 <style>
 /* 書類作成ウィザード：上に進捗、1画面1テーマ、下に固定の「次へ」 */
@@ -69,6 +71,24 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--green)}
 .preview{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#F7F7F5;margin:16px 0}
 .preview .scaler{transform-origin:top left}
 .done{font-size:44px;line-height:1;margin:18px 0 4px;color:var(--green)}
+
+/* ===== 求職者向けデザイン（theme=friendly）：パステル × 手描き風 ===== */
+html.t-friendly{
+  --ink:#5A4636; --text:#5A4636; --muted:#9A8473; --line:#EEDFCF; --soft:#FFF1E4;
+  --green:#4E9C7A; --green-soft:#E1F2E9; --warm:#E8826F; --warm-soft:#FDE3D9; --bg:#FFFBF5;
+  --font:"Zen Maru Gothic","Hiragino Maru Gothic ProN","Hiragino Sans","Noto Sans JP",system-ui,sans-serif;
+}
+html.t-friendly .top{border-bottom:3px dotted var(--line)}
+html.t-friendly .prog{height:10px;border-radius:999px;background:var(--soft)}
+html.t-friendly .prog i{border-radius:999px;background:repeating-linear-gradient(-45deg,var(--green) 0 8px,#68B592 8px 16px)}
+html.t-friendly input[type=text],html.t-friendly input[type=tel],html.t-friendly input[type=email],html.t-friendly input[type=date],html.t-friendly input[type=month],html.t-friendly select,html.t-friendly textarea{border-width:2px;border-radius:14px}
+html.t-friendly .card,html.t-friendly .ai{border:2px dashed var(--line);border-radius:20px;background:#fff}
+html.t-friendly .note,html.t-friendly .warn{border-radius:16px}
+html.t-friendly .bottom{background:rgba(255,251,245,.96);border-top:3px dotted var(--line)}
+html.t-friendly .btn{border-radius:999px}
+html.t-friendly .btn.primary{box-shadow:0 4px 0 #3F8566}
+html.t-friendly .btn.warm{box-shadow:0 4px 0 #D06C5A}
+html.t-friendly .ex{border-radius:18px}
 </style>
 </head>
 <body>
@@ -80,7 +100,6 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--green)}
 <nav class="bottom" id="nav" hidden></nav>
 
 <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-<script src="../config.js"></script>
 <script>
 (function () {
   const cfg = window.ONDO_CONFIG || {};
