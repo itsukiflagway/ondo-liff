@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ONDO コラム</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap">
+<style>
+/* 記事ページ：上に読了バー、カテゴリ帯、本文、相談・求人への導線、関連記事 */
+:root{
+  --ink:#14302A; --text:#2A3330; --muted:#6B7A75; --line:#E4E9E6; --soft:#F4F7F5;
+  --green:#0F7B5F; --warm:#E06A2E; --warm-soft:#FCEDE4; --bg:#FFFFFF; --accent:#0F7B5F;
+  --font:"Zen Kaku Gothic New","Hiragino Sans","Noto Sans JP",system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--text)}
+body{font-family:var(--font);font-size:16px;line-height:1.85;-webkit-text-size-adjust:100%;padding-bottom:env(safe-area-inset-bottom,0px)}
+.progress{position:fixed;top:0;left:0;height:3px;width:0;background:var(--accent);z-index:10;transition:width .1s linear}
+.wrap{max-width:640px;margin:0 auto;padding:0 20px}
+.band{padding:28px 20px 22px;background:var(--soft);border-bottom:1px solid var(--line)}
+.band .wrap{padding:0}
+.cat{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:var(--accent);letter-spacing:.04em}
+.cat::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--accent)}
+h1{font-size:23px;line-height:1.5;margin:10px 0 12px;color:var(--ink);font-weight:700;text-wrap:balance}
+.meta{font-size:12px;color:var(--muted);display:flex;gap:12px;flex-wrap:wrap}
+.lead{margin:18px 0 0;font-size:15px;color:var(--muted)}
+article{padding:8px 0 8px}
+article h2{font-size:19px;color:var(--ink);margin:36px 0 12px;padding-bottom:8px;border-bottom:2px solid var(--line);line-height:1.5;text-wrap:balance}
+article h3{font-size:16.5px;color:var(--ink);margin:24px 0 6px;line-height:1.5}
+article p{margin:14px 0}
+article ul,article ol{margin:12px 0;padding-left:1.4em}
+article li{margin:6px 0}
+article li::marker{color:var(--accent)}
+article strong{background:linear-gradient(transparent 62%,var(--warm-soft) 62%);font-weight:700;color:var(--ink)}
+article blockquote{margin:20px 0;padding:14px 16px;background:var(--soft);border-radius:10px;font-size:14.5px;color:var(--text)}
+article blockquote::before{content:"POINT";display:block;font-size:11px;font-weight:700;color:var(--accent);letter-spacing:.12em;margin-bottom:2px}
+.cta{margin:36px 0 8px;padding:22px 20px;border-radius:16px;background:var(--ink);color:#fff}
+.cta h2{margin:0 0 6px;font-size:18px;line-height:1.5;color:#fff;border:0;padding:0}
+.cta p{margin:0 0 16px;font-size:14px;color:#C9D6D1;line-height:1.7}
+.btn{display:flex;align-items:center;justify-content:center;width:100%;min-height:50px;border:0;border-radius:12px;font-family:inherit;font-size:16px;font-weight:700;cursor:pointer;text-decoration:none}
+.btn+.btn{margin-top:10px}
+.btn.primary{background:var(--warm);color:#fff}
+.btn.ghost{background:transparent;color:#fff;border:1.5px solid rgba(255,255,255,.45)}
+.btn:focus-visible{outline:3px solid #F3B44B;outline-offset:2px}
+.note{font-size:12px;color:#C9D6D1;margin:12px 0 0;text-align:center}
+.related{margin:32px 0}
+.related h2{font-size:15px;color:var(--muted);font-weight:700;margin:0 0 10px;border:0;padding:0}
+.card{display:block;padding:14px 16px;border:1px solid var(--line);border-radius:12px;text-decoration:none;color:inherit;margin-bottom:10px}
+.card:active{background:var(--soft)}
+.card .cat{font-size:11px}
+.card b{display:block;color:var(--ink);font-size:15px;line-height:1.55;margin-top:2px}
+.card span.m{display:block;font-size:12px;color:var(--muted);margin-top:4px}
+.group{margin:26px 0 8px;font-size:13px;font-weight:700;color:var(--muted);letter-spacing:.06em}
+footer{margin:28px 0 36px;font-size:12px;color:var(--muted);text-align:center;line-height:1.7}
+.skeleton{padding:40px 0;color:var(--muted);text-align:center;font-size:14px}
+.err{padding:40px 0;text-align:center}
+</style>
+</head>
+<body>
+<div class="progress" id="progress"></div>
+<main id="app"><div class="wrap skeleton">読み込んでいます…</div></main>
+
+<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+<script src="./config.js"></script>
+<script>
+(function () {
+  const cfg = window.ONDO_CONFIG || {};
+  const app = document.getElementById('app');
+  const state = { uid: null, inClient: false, col: null, openId: Math.random().toString(36).slice(2), visibleMs: 0, since: Date.now(), maxScroll: 0, sent: false };
+
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const inline = s => esc(s).replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+
+  /* 簡易 Markdown：## / ### / - / 1. / > / 段落 / **強調** */
+  function md(src) {
+    const out = []; let list = null; let para = [];
+    const flushPara = () => { if (para.length) { out.push('<p>' + inline(para.join('')) + '</p>'); para = []; } };
+    const flushList = () => { if (list) { out.push(`<${list.tag}>${list.items.map(i => '<li>' + inline(i) + '</li>').join('')}</${list.tag}>`); list = null; } };
+    src.split(/\r?\n/).forEach(line => {
+      const t = line.trim();
+      let m;
+      if (!t) { flushPara(); flushList(); return; }
+      if ((m = t.match(/^(#{2,3})\s+(.*)$/))) { flushPara(); flushList(); out.push(`<h${m[1].length}>${inline(m[2])}</h${m[1].length}>`); return; }
+      if ((m = t.match(/^>\s?(.*)$/))) { flushPara(); flushList(); out.push('<blockquote>' + inline(m[1]) + '</blockquote>'); return; }
+      if ((m = t.match(/^[-・]\s+(.*)$/))) { flushPara(); if (!list || list.tag !== 'ul') { flushList(); list = { tag: 'ul', items: [] }; } list.items.push(m[1]); return; }
+      if ((m = t.match(/^\d+\.\s+(.*)$/))) { flushPara(); if (!list || list.tag !== 'ol') { flushList(); list = { tag: 'ol', items: [] }; } list.items.push(m[1]); return; }
+      flushList(); para.push(t);
+    });
+    flushPara(); flushList();
+    return out.join('');
+  }
+
+  /* 計測：開いた・読んだ時間・どこまで読んだか を GAS に送る */
+  function track(type, extra) {
+    if (!cfg.gasUrl || !state.uid) return;
+    const body = JSON.stringify(Object.assign({ ondoTrack: 1, type, userId: state.uid, columnId: state.col && state.col.id, openId: state.openId, at: new Date().toISOString() }, extra || {}));
+    try {
+      if (navigator.sendBeacon && navigator.sendBeacon(cfg.gasUrl, new Blob([body], { type: 'text/plain' }))) return;
+    } catch (e) { /* fall through */ }
+    fetch(cfg.gasUrl, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain' }, body, keepalive: true }).catch(() => {});
+  }
+  function readStats() {
+    const now = Date.now();
+    if (document.visibilityState === 'visible') { state.visibleMs += now - state.since; state.since = now; }
+    return { seconds: Math.round(state.visibleMs / 1000), scroll: state.maxScroll };
+  }
+  function onScroll() {
+    const h = document.documentElement;
+    const max = h.scrollHeight - h.clientHeight;
+    const pct = max > 0 ? Math.min(100, Math.round((h.scrollTop / max) * 100)) : 100;
+    state.maxScroll = Math.max(state.maxScroll, pct);
+    document.getElementById('progress').style.width = pct + '%';
+  }
+  document.addEventListener('visibilitychange', () => {
+    if (!state.col) return;
+    if (document.visibilityState === 'hidden') { track('column_read', readStats()); }
+    else { state.since = Date.now(); }
+  });
+  window.addEventListener('pagehide', () => { if (state.col) track('column_read', readStats()); });
+  window.addEventListener('scroll', onScroll, { passive: true });
+
+  function sendToChat(text, cta) {
+    track('column_cta', Object.assign({ cta }, readStats()));
+    if (state.inClient && liff.isApiAvailable && liff.isApiAvailable('sendMessages') !== false) {
+      liff.sendMessages([{ type: 'text', text }]).then(() => liff.closeWindow()).catch(() => liff.closeWindow());
+    } else if (state.inClient) {
+      liff.closeWindow();
+    }
+  }
+
+  function related(idx, col) {
+    const same = idx.columns.filter(c => c.tpl === col.tpl && c.id !== col.id);
+    same.sort((a, b) => (b.cat === col.cat) - (a.cat === col.cat) || a.level - b.level);
+    return same.slice(0, 3);
+  }
+  const catName = (idx, c) => (idx.categories[c.tpl] || {})[c.cat] || '';
+  const href = id => '?id=' + encodeURIComponent(id);
+  const cardHtml = (idx, c) => `<a class="card" href="${href(c.id)}" style="--accent:${esc(c.color || '#0F7B5F')}"><span class="cat">${esc(catName(idx, c))}</span><b>${esc(c.title)}</b><span class="m">${c.minutes}分で読めます</span></a>`;
+
+  async function renderArticle(idx, id) {
+    const col = idx.columns.find(c => c.id === id);
+    if (!col) return renderList(idx, 'お探しのコラムが見つかりませんでした。');
+    state.col = col;
+    document.documentElement.style.setProperty('--accent', col.color || '#0F7B5F');
+    document.title = col.title + '｜ONDO コラム';
+    const body = await fetch('../columns/' + encodeURIComponent(col.id) + '.md', { cache: 'no-cache' }).then(r => { if (!r.ok) throw new Error(r.status); return r.text(); });
+    const jobText = col.jobHint ? `${col.jobHint}の求人を見る` : '求人を見る';
+    app.innerHTML = `
+      <header class="band"><div class="wrap">
+        <span class="cat">${esc(catName(idx, col))}｜${esc(col.sub)}</span>
+        <h1>${esc(col.title)}</h1>
+        <div class="meta"><span>${col.minutes}分で読めます</span><span>ONDO編集部</span></div>
+        <p class="lead">${esc(col.lead)}</p>
+      </div></header>
+      <div class="wrap">
+        <article>${md(body)}</article>
+        <section class="cta">
+          <h2>${col.level >= 3 ? '退職や転職のタイミング、一緒に考えませんか？' : 'あなたに合う職場、一緒に探しませんか？'}</h2>
+          <p>LINEで気軽に相談できます。今の悩みを話すだけでも大丈夫です。</p>
+          <button class="btn primary" id="consult">キャリアアドバイザーに相談する</button>
+          <button class="btn ghost" id="jobs">${esc(jobText)}</button>
+          ${state.inClient ? '' : '<p class="note">LINEアプリで開くと、ここから相談や求人の確認ができます</p>'}
+        </section>
+        <section class="related"><h2>あわせて読みたい</h2>${related(idx, col).map(c => cardHtml(idx, c)).join('')}</section>
+        <footer>ONDO編集部<br>※このコラムはデモ用のサンプルです</footer>
+      </div>`;
+    document.getElementById('consult').onclick = () => sendToChat('キャリアアドバイザーに相談したい', 'consult');
+    document.getElementById('jobs').onclick = () => sendToChat(jobText, 'jobs');
+    window.scrollTo(0, 0); onScroll();
+    track('column_open');
+  }
+
+  function renderList(idx, message) {
+    const tplId = new URLSearchParams(location.search).get('tpl') || 'hoiku';
+    const cats = idx.categories[tplId] || {};
+    const cols = idx.columns.filter(c => c.tpl === tplId);
+    const groups = Object.keys(cats).filter(k => cols.some(c => c.cat === k));
+    app.innerHTML = `
+      <header class="band"><div class="wrap"><span class="cat">ONDO コラム</span><h1>働き方の悩み、ひとりで抱えていませんか？</h1>
+      <p class="lead">${message ? esc(message) : '気になるテーマから読んでみてください。'}</p></div></header>
+      <div class="wrap">${groups.map(k => `<div class="group">${esc(cats[k])}</div>` + cols.filter(c => c.cat === k).map(c => cardHtml(idx, c)).join('')).join('')}
+      <footer>ONDO編集部<br>※このコラムはデモ用のサンプルです</footer></div>`;
+  }
+
+  async function start() {
+    try {
+      if (cfg.liffId && window.liff) {
+        await liff.init({ liffId: cfg.liffId });
+        state.inClient = liff.isInClient();
+        if (liff.isLoggedIn()) { const p = await liff.getProfile(); state.uid = p.userId; }
+      }
+    } catch (e) { console.warn('LIFF init failed', e); }
+    try {
+      const idx = await fetch('../columns/index.json', { cache: 'no-cache' }).then(r => r.json());
+      const id = new URLSearchParams(location.search).get('id'); // LIFF の初期化後に読む
+      if (id) await renderArticle(idx, id); else renderList(idx);
+    } catch (e) {
+      app.innerHTML = '<div class="wrap err"><p>コラムを読み込めませんでした。時間をおいてもう一度お試しください。</p></div>';
+    }
+  }
+  start();
+})();
+</script>
+</body>
+</html>
