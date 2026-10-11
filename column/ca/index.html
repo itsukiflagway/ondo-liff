@@ -92,6 +92,32 @@ button{font:inherit;color:inherit}
 .tl li.strong{color:var(--ink);font-weight:700}
 .tl time{display:block;font-size:11px;color:var(--muted);font-weight:400}
 .empty{color:var(--muted);text-align:center;padding:30px}
+.tl li.ca::before{border-color:#2F6DB5;background:#2F6DB5}
+.tl li.ca{color:#1F4F87}
+.p-due{background:#E6EFF9;color:#1F4F87}
+.acts{display:flex;gap:8px;margin-top:14px}
+.abtn{flex:1;border:1.5px solid var(--line);background:var(--card);border-radius:10px;padding:9px 0;font-weight:700;cursor:pointer;color:var(--ink)}
+.abtn.on{border-color:var(--green);background:var(--green-soft);color:var(--green)}
+.abtn.line{background:#06C755;border-color:#06C755;color:#fff}
+.abtn.line.on{background:#05A847;border-color:#05A847;color:#fff}
+.form{border:1.5px solid var(--line);border-radius:12px;padding:12px;margin-top:10px;background:var(--soft)}
+.form label{display:block;font-size:12px;font-weight:700;color:var(--muted);margin:8px 0 4px}
+.form textarea,.form input[type=date]{width:100%;font:inherit;font-size:14px;border:1.5px solid var(--line);border-radius:8px;padding:8px 10px;background:#fff;color:var(--text)}
+.form textarea{min-height:110px;resize:vertical;line-height:1.7}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1.5px solid var(--line);background:#fff;border-radius:999px;padding:4px 12px;font-size:12.5px;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff;font-weight:700}
+.fnote{font-size:11.5px;color:var(--muted);margin-top:6px}
+.frow{display:flex;gap:8px;margin-top:10px;align-items:center}
+.go{border:0;background:var(--green);color:#fff;border-radius:10px;padding:9px 18px;font-weight:700;cursor:pointer}
+.go.line{background:#06C755}
+.go:disabled{opacity:.5}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--ink);color:#fff;border-radius:999px;padding:8px 18px;font-size:13px;z-index:30;box-shadow:0 4px 14px rgba(0,0,0,.2)}
+.login{max-width:380px;margin:60px auto;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px}
+.login h1{font-size:17px;margin:0 0 6px;color:var(--ink)}
+.login input{width:100%;font:inherit;font-size:15px;border:1.5px solid var(--line);border-radius:8px;padding:10px;margin:10px 0}
+.foot{text-align:center;font-size:12px;color:var(--muted);margin:24px 0 10px}
+.foot a,.foot button{color:var(--green);background:none;border:0;cursor:pointer;text-decoration:underline;font-size:12px}
 .back{display:none}
 .err{color:#B3361F;padding:20px}
 .spin{width:32px;height:32px;border-radius:50%;border:4px solid var(--green-soft);border-top-color:var(--green);margin:60px auto 10px;animation:sp 1s linear infinite}
@@ -120,7 +146,10 @@ button:focus-visible{outline:3px solid #F3B44B;outline-offset:2px}
   const app = document.getElementById('app');
   const qs = new URLSearchParams(location.search);
   const MOCK = /mock(=|%3D)1/.test(location.search);
-  const state = { uid: null, data: null, sel: null, filter: 'alert' };
+  const state = { uid: null, data: null, sel: null, filter: 'alert', act: '', busy: false, form: {} };
+  const KEY = 'ondo_ca_key';
+  const store = { get: () => { try { return localStorage.getItem(KEY) || ''; } catch (e) { return ''; } }, set: v => { try { v ? localStorage.setItem(KEY, v) : localStorage.removeItem(KEY); } catch (e) { /* 保存できない環境 */ } } };
+  let ownerKey = '';
   const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const rel = iso => {
     if (!iso) return '—';
@@ -130,16 +159,43 @@ button:focus-visible{outline:3px solid #F3B44B;outline-offset:2px}
     return `${Math.round(h / 24)}日前`;
   };
   const abs = iso => { const t = new Date(new Date(iso).getTime() + 9 * 3600e3); return `${t.getUTCMonth() + 1}/${t.getUTCDate()} ${t.getUTCHours()}:${String(t.getUTCMinutes()).padStart(2, '0')}`; };
-  const keyFromHash = () => (qs.get('key') || '').slice(0, 100);
+  // 合言葉：URL の ?key= で受け取ったら保存してアドレスバーから消す（履歴に残さない）
+  (function () {
+    const k = (qs.get('key') || '').slice(0, 100);
+    if (k) { store.set(k); qs.delete('key'); history.replaceState(null, '', location.pathname + (qs.toString() ? '?' + qs : '')); }
+    ownerKey = store.get();
+  })();
+  const keyFromHash = () => ownerKey;
 
-  async function load() {
-    if (MOCK) return fetch('./mock.json', { cache: 'no-cache' }).then(r => r.json());
+  async function api(action, extra) {
+    if (MOCK) return mockApi(action, extra || {});
     if (!cfg.gasUrl) throw new Error('サーバーの設定がありません');
     const key = keyFromHash();
-    const res = await fetch(cfg.gasUrl, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify(key ? { ondoCa: 1, action: 'list', key } : { ondoCa: 1, action: 'list', userId: state.uid }) });
+    const body = Object.assign({ ondoCa: 1, action }, key ? { key } : { userId: state.uid }, extra || {});
+    const res = await fetch(cfg.gasUrl, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify(body) });
     const j = await res.json();
-    if (!j.ok) throw new Error(j.error || '読み込みに失敗しました');
+    if (!j.ok) { if (j.badKey) { store.set(''); ownerKey = ''; } throw new Error(j.error || '読み込みに失敗しました'); }
     return j;
+  }
+  const load = () => api('list');
+  /* 見た目確認用（?mock=1）：送信・記録は画面の上だけで反映 */
+  let mockData = null;
+  async function mockApi(action, x) {
+    if (!mockData) mockData = await fetch('./mock.json', { cache: 'no-cache' }).then(r => r.json());
+    if (action === 'log' || action === 'send') {
+      const p = mockData.people.find(q => q.id === x.targetId);
+      const type = action === 'send' ? 'LINE送信' : x.type;
+      const memo = x.memo || x.text || '';
+      p.timeline.unshift({ t: new Date().toISOString(), label: `CA：${type}${x.result ? '（' + x.result + '）' : action === 'send' ? '（返信待ち）' : ''}${memo ? '｜' + memo.slice(0, 40) : ''}`, icon: 'ca', ca: true });
+      p.lastCa = { t: new Date().toISOString(), type, result: x.result || (action === 'send' ? '返信待ち' : '') };
+      if (x.nextDate) p.nextDate = x.nextDate;
+      mockData.done = '対応履歴に記録しました（見た目確認用）';
+    }
+    return JSON.parse(JSON.stringify(mockData));
+  }
+  function toast(msg) {
+    const t = document.createElement('div'); t.className = 'toast'; t.textContent = msg; t.setAttribute('role', 'status');
+    document.body.appendChild(t); setTimeout(() => t.remove(), 3200);
   }
 
   function render() {
@@ -170,9 +226,12 @@ button:focus-visible{outline:3px solid #F3B44B;outline-offset:2px}
           <div class="list">${list.length ? list.map(rowHtml).join('') : '<p class="empty">いま連絡が必要な人はいません</p>'}</div>
         </section>
         <aside class="detail" id="detail" aria-label="求職者の詳細"></aside>
-      </div>`;
+      </div>
+      <p class="foot">${d.mode === 'owner' ? `運用者としてログイン中　<a href="https://chat.line.biz/" target="_blank" rel="noopener">LINE公式アカウントのチャットを開く</a>　<button id="logout">ログアウト</button>` : '<button id="ownerLogin">運用者としてログイン（全員を表示）</button>'}</p>`;
+    const lo = document.getElementById('logout'); if (lo) lo.onclick = () => { store.set(''); ownerKey = ''; location.reload(); };
+    const ol = document.getElementById('ownerLogin'); if (ol) ol.onclick = showLogin;
     app.querySelectorAll('.tab').forEach(b => b.onclick = () => { state.filter = b.dataset.f; render(); });
-    app.querySelectorAll('.row').forEach(b => b.onclick = () => { state.sel = b.dataset.id; render(); document.getElementById('detail').classList.add('open'); });
+    app.querySelectorAll('.row').forEach(b => b.onclick = () => { if (state.sel !== b.dataset.id) { state.act = ''; state.form = {}; } state.sel = b.dataset.id; render(); document.getElementById('detail').classList.add('open'); });
     renderDetail();
   }
 
@@ -180,10 +239,10 @@ button:focus-visible{outline:3px solid #F3B44B;outline-offset:2px}
     return `<button class="row ${p.self ? 'self' : ''}" data-id="${esc(p.id)}" aria-pressed="${state.sel === p.id}">
       <span class="temp t-${p.bandKey}"><b>${p.score}</b><span>${esc(p.band)}</span></span>
       <span>
-        <span class="rh"><b>${esc(p.self ? 'あなた（' + p.name + '）' : p.name)}</b>${p.alert ? '<span class="pill p-bell">今すぐ</span>' : ''}<span class="pill p-stage">${esc(p.stage)}</span>${p.gain48 > 0 ? `<span class="p-up">▲${p.gain48}（48時間）</span>` : ''}</span>
+        <span class="rh"><b>${esc(p.self ? 'あなた（' + p.name + '）' : p.name)}</b>${p.alert ? '<span class="pill p-bell">今すぐ</span>' : ''}<span class="pill p-stage">${esc(p.stage)}</span>${p.nextDate ? `<span class="pill p-due">次回連絡 ${esc(p.nextDate.slice(5).replace('-', '/'))}</span>` : ''}${p.gain48 > 0 ? `<span class="p-up">▲${p.gain48}（48時間）</span>` : ''}</span>
         ${p.tags.length ? `<span class="tags">${p.tags.map(t => `<span class="tag">${esc(t)}</span>`).join('')}</span>` : ''}
         <span class="talk">${esc(p.talk[0] || '')}</span>
-        <span class="meta"><span>最後の行動：${rel(p.lastAt)}</span><span>連絡のおすすめ：${esc(p.callTime)}</span></span>
+        <span class="meta"><span>最後の行動：${rel(p.lastAt)}</span><span>連絡のおすすめ：${esc(p.callTime)}</span>${p.lastCa ? `<span>CA対応：${esc(p.lastCa.type)}${p.lastCa.result ? '（' + esc(p.lastCa.result) + '）' : ''} ${rel(p.lastCa.t)}</span>` : '<span>CA対応：まだなし</span>'}</span>
       </span></button>`;
   }
 
@@ -198,6 +257,7 @@ button:focus-visible{outline:3px solid #F3B44B;outline-offset:2px}
         <div><h2>${esc(p.self ? 'あなた（' + p.name + '）' : p.name)}</h2>
           <div class="rh" style="margin-top:4px"><span class="pill p-stage">ステージ：${esc(p.stage)}</span>${p.gain48 > 0 ? `<span class="p-up">▲${p.gain48}（48時間）</span>` : ''}</div>
           ${p.tags.length ? `<div class="tags">${p.tags.map(t => `<span class="tag">悩み：${esc(t)}</span>`).join('')}</div>` : ''}</div></div>
+      ${actionsHtml(p)}
       <div class="sec"><h3>おすすめの声かけ</h3>${p.talk.map(t => `<div class="tk">${esc(t)}</div>`).join('')}</div>
       <div class="sec"><h3>連絡のおすすめ時間</h3><div>${esc(p.callTime)}</div></div>
       ${p.booking ? `<div class="sec"><h3>面談</h3><div class="bk">${esc(p.booking.label)}（${esc(p.booking.method)}）${p.booking.ca ? `　担当：${esc(p.booking.ca)}` : ''}</div></div>` : ''}
@@ -205,26 +265,101 @@ button:focus-visible{outline:3px solid #F3B44B;outline-offset:2px}
         ${Object.entries(p.axes).map(([k, v]) => `<span>${k}</span><span class="tr"><i style="width:${Math.round(v / max * 100)}%"></i></span><span class="v">${v}</span>`).join('')}</div></div>
       <div class="sec"><h3>希望条件・書類</h3><dl class="kv">${p.answers.map(a => `<dt>${esc(a.label)}</dt><dd>${esc(a.value)}</dd>`).join('')}
         <dt>閲覧した求人</dt><dd>${p.viewed}件（気になる ${p.favorites}件）</dd><dt>応募書類</dt><dd>${esc(p.resume)}</dd></dl></div>
-      <div class="sec"><h3>行動の記録（新しい順）</h3>${p.timeline.length ? `<ul class="tl">${p.timeline.map(t => `<li class="${t.strong ? 'strong' : ''}">${esc(t.label)}<time>${abs(t.t)}（${rel(t.t)}）</time></li>`).join('')}</ul>` : '<p class="empty">まだ行動がありません</p>'}</div>`;
+      <div class="sec"><h3>行動の記録（新しい順）</h3>${p.timeline.length ? `<ul class="tl">${p.timeline.map(t => `<li class="${t.ca ? 'ca' : t.strong ? 'strong' : ''}">${esc(t.label)}<time>${abs(t.t)}（${rel(t.t)}）</time></li>`).join('')}</ul>` : '<p class="empty">まだ行動がありません</p>'}</div>`;
     const back = document.getElementById('back');
     back.onclick = () => el.classList.remove('open');
+    bindActions(p);
+  }
+
+  /* ---------- 対応：LINEで送る／対応を記録 ---------- */
+  const templates = p => {
+    const n = p.self ? 'あなた' : p.name.replace('（サンプル）', '') + 'さん';
+    const brand = state.data.brand || '';
+    return {
+      'ご挨拶': `${n}、こんにちは。${brand}の担当キャリアアドバイザーです。\nLINEでのご登録ありがとうございます。気になる求人や、今の職場のことなど、なんでも気軽にご相談ください。`,
+      '求人の提案': `${n}、こんにちは。ご希望の条件に近い求人が見つかったのでご案内します。\n${p.tags[0] ? `「${p.tags[0]}」を大事にされていると伺い、` : ''}職場の雰囲気も含めて詳しくお伝えできます。ご都合のよいときにお返事ください。`,
+      '面談の日程': `${n}、こんにちは。一度お電話かオンラインで、ご希望を詳しく伺えたらうれしいです。\nメニューの「相談する」から、空いている日時を選んで予約できます。`,
+      '書類の添削': `${n}、書類の作成おつかれさまでした。内容を拝見しました。\n自己PRをもう少し具体的にすると、さらに伝わりやすくなります。詳しくご説明しますね。`
+    };
+  };
+  function actionsHtml(p) {
+    const f = state.form;
+    const types = state.data.logTypes || [];
+    const sendNote = p.realLine ? (state.data.mode === 'owner' ? `${esc(p.name)}さんのLINEに、公式アカウントから届きます（メッセージ通数にカウントされます）` : `あなたのLINEに届きます（デモは1日${state.data.sendLimit}通まで）`) : 'サンプルの求職者なので実際には送られず、対応履歴にだけ記録されます';
+    const results = (types.find(t => t.type === f.type) || { results: [] }).results;
+    return `<div class="acts" role="group" aria-label="対応">
+        <button class="abtn line ${state.act === 'send' ? 'on' : ''}" id="aSend" aria-expanded="${state.act === 'send'}">LINEで送る</button>
+        <button class="abtn ${state.act === 'log' ? 'on' : ''}" id="aLog" aria-expanded="${state.act === 'log'}">対応を記録</button></div>
+      ${state.act === 'send' ? `<div class="form">
+        <label>ひな形</label><div class="chips">${Object.keys(templates(p)).map(k => `<button class="chip" data-tpl="${esc(k)}">${esc(k)}</button>`).join('')}</div>
+        <label for="fText">メッセージ</label><textarea id="fText" maxlength="500" placeholder="メッセージを入力">${esc(f.text || '')}</textarea>
+        <label for="fNextS">次回連絡日（任意）</label><input type="date" id="fNextS" value="${esc(f.nextDate || '')}">
+        <p class="fnote">${sendNote}</p>
+        <div class="frow"><button class="go line" id="doSend" ${state.busy ? 'disabled' : ''}>${state.busy ? '送信しています…' : '送信する'}</button></div></div>` : ''}
+      ${state.act === 'log' ? `<div class="form">
+        <label>対応の種類</label><div class="chips">${types.map(t => `<button class="chip" data-type="${esc(t.type)}" aria-pressed="${f.type === t.type}">${esc(t.type)}</button>`).join('')}</div>
+        ${results.length ? `<label>結果</label><div class="chips">${results.map(r => `<button class="chip" data-res="${esc(r)}" aria-pressed="${f.result === r}">${esc(r)}</button>`).join('')}</div>` : ''}
+        <label for="fMemo">メモ（任意）</label><textarea id="fMemo" maxlength="500" placeholder="例：持ち帰りなしの園を2件提案。来週返事をもらう">${esc(f.memo || '')}</textarea>
+        <label for="fNext">次回連絡日（任意）</label><input type="date" id="fNext" value="${esc(f.nextDate || '')}">
+        <p class="fnote">対応履歴は温度感の点数には入りません。既存CRMの「活動ログ」と同じ種類で記録します。</p>
+        <div class="frow"><button class="go" id="doLog" ${state.busy || !f.type ? 'disabled' : ''}>${state.busy ? '記録しています…' : '記録する'}</button></div></div>` : ''}`;
+  }
+  function bindActions(p) {
+    const f = state.form;
+    const keep = () => {
+      const t = document.getElementById('fText'), m = document.getElementById('fMemo'), n = document.getElementById('fNext') || document.getElementById('fNextS');
+      if (t) f.text = t.value; if (m) f.memo = m.value; if (n) f.nextDate = n.value;
+    };
+    const rerender = () => { keep(); const y = document.getElementById('detail').scrollTop; renderDetail(); document.getElementById('detail').scrollTop = y; };
+    document.getElementById('aSend').onclick = () => { keep(); state.act = state.act === 'send' ? '' : 'send'; rerender(); };
+    document.getElementById('aLog').onclick = () => { keep(); state.act = state.act === 'log' ? '' : 'log'; rerender(); };
+    document.querySelectorAll('[data-tpl]').forEach(b => b.onclick = () => { f.text = templates(p)[b.dataset.tpl]; document.getElementById('fText').value = f.text; });
+    document.querySelectorAll('[data-type]').forEach(b => b.onclick = () => { keep(); f.type = b.dataset.type; f.result = ''; rerender(); });
+    document.querySelectorAll('[data-res]').forEach(b => b.onclick = () => { keep(); f.result = b.dataset.res; rerender(); });
+    const submit = async (action, payload) => {
+      keep(); state.busy = true; rerender();
+      try {
+        const j = await api(action, Object.assign({ targetId: p.id, nextDate: f.nextDate || '' }, payload));
+        state.data = j; state.busy = false; state.act = ''; state.form = {};
+        render(); document.getElementById('detail').classList.add('open');
+        toast(j.done || '記録しました');
+      } catch (e) { state.busy = false; rerender(); toast(e.message); }
+    };
+    const ds = document.getElementById('doSend');
+    if (ds) ds.onclick = () => { keep(); if (!(f.text || '').trim()) return toast('メッセージを入力してください'); submit('send', { text: f.text }); };
+    const dl = document.getElementById('doLog');
+    if (dl) dl.onclick = () => submit('log', { type: f.type, result: f.result || '', memo: f.memo || '' });
+  }
+
+  function showLogin(msg) {
+    app.innerHTML = `<form class="login" id="lf"><h1>運用者としてログイン</h1><p class="fnote" style="margin:0">スクリプト プロパティ CA_VIEW_KEY に設定した合言葉を入力してください。この端末に保存され、次回から入力は不要です。</p>
+      <input type="password" id="lk" autocomplete="current-password" aria-label="合言葉" placeholder="合言葉">
+      ${typeof msg === 'string' ? `<p class="err" style="padding:0 0 8px">${esc(msg)}</p>` : ''}
+      <div class="frow"><button class="go" type="submit">ログイン</button><button type="button" class="chip" id="lc">キャンセル</button></div></form>`;
+    document.getElementById('lf').onsubmit = ev => { ev.preventDefault(); const v = document.getElementById('lk').value.trim(); if (!v) return; store.set(v); ownerKey = v; app.innerHTML = '<div class="spin"></div>'; start(); };
+    document.getElementById('lc').onclick = () => { app.innerHTML = '<div class="spin"></div>'; start(); };
+    document.getElementById('lk').focus();
   }
 
   async function start() {
     try {
+      // PC のブラウザ（PC 版 LINE から開いた場合も含む）では、LINE ログインの画面を経由して本人を確認する
       if (!MOCK && !keyFromHash() && cfg.liffId && window.liff) {
-        await liff.init({ liffId: cfg.liffId });
+        await liff.init({ liffId: cfg.liffId, withLoginOnExternalBrowser: true });
         if (liff.isLoggedIn()) state.uid = (await liff.getProfile()).userId;
       }
     } catch (e) { console.warn('LIFF init failed', e); }
-    if (!MOCK && !keyFromHash() && !state.uid) { app.innerHTML = '<p class="err">LINEアプリの中で開いてください。</p>'; return; }
+    if (!MOCK && !keyFromHash() && !state.uid) { app.innerHTML = '<p class="err">LINEでログインできませんでした。</p><p class="foot"><button id="ownerLogin">運用者としてログイン</button></p>'; document.getElementById('ownerLogin').onclick = showLogin; return; }
     try {
       state.data = await load();
       const self = state.data.people.find(p => p.self);
       state.sel = state.sel || (self || state.data.people[0] || {}).id;
       if (self && !self.alert) state.filter = 'all';
       render();
-    } catch (e) { app.innerHTML = `<p class="err">${esc(e.message)}</p>`; }
+    } catch (e) {
+      if (!keyFromHash() && /合言葉/.test(e.message)) return showLogin(e.message);
+      app.innerHTML = `<p class="err">${esc(e.message)}</p>`;
+    }
   }
   document.getElementById('reload').onclick = () => { app.innerHTML = '<div class="spin"></div>'; start(); };
   start();
