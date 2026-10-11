@@ -116,6 +116,54 @@ button{font:inherit;color:inherit}
 .login{max-width:380px;margin:60px auto;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px}
 .login h1{font-size:17px;margin:0 0 6px;color:var(--ink)}
 .login input{width:100%;font:inherit;font-size:15px;border:1.5px solid var(--line);border-radius:8px;padding:10px;margin:10px 0}
+.views{position:sticky;top:44px;z-index:9;background:var(--bg);border-bottom:1px solid var(--line);display:flex;gap:4px;padding:8px 18px 0;overflow-x:auto}
+.views button{border:0;background:none;padding:8px 14px 10px;font-weight:700;color:var(--muted);border-bottom:3px solid transparent;cursor:pointer;white-space:nowrap}
+.views button[aria-current="page"]{color:var(--ink);border-bottom-color:var(--green)}
+.bcgrid{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:14px;align-items:start}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px}
+.panel h2{font-size:15px;margin:0 0 4px;color:var(--ink)}
+.panel .sub{font-size:12px;color:var(--muted);margin:0 0 6px}
+.grp{margin-top:12px}
+.grp>b{display:block;font-size:12px;color:var(--muted);margin-bottom:5px}
+.panel input[type=text],.panel input[type=datetime-local],.panel input[type=number],.panel select,.panel textarea{width:100%;font:inherit;font-size:14px;border:1.5px solid var(--line);border-radius:8px;padding:8px 10px;background:#fff;color:var(--text)}
+.panel textarea{min-height:120px;resize:vertical;line-height:1.7}
+.panel details{margin-top:12px}
+.panel summary{font-size:12.5px;font-weight:700;color:var(--green);cursor:pointer}
+.count{display:flex;align-items:baseline;gap:8px;background:var(--green-soft);border-radius:10px;padding:10px 12px;margin-top:12px}
+.count b{font-size:24px;color:var(--ink);font-variant-numeric:tabular-nums}
+.count span{font-size:12.5px;color:var(--text)}
+.names{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
+.names span{font-size:11.5px;background:var(--soft);border:1px solid var(--line);border-radius:999px;padding:0 8px}
+.timing label{display:flex;gap:8px;align-items:flex-start;padding:8px 10px;border:1.5px solid var(--line);border-radius:10px;margin-top:6px;cursor:pointer;font-size:13.5px;background:#fff}
+.timing label:has(input:checked){border-color:var(--green);background:var(--green-soft)}
+.timing small{display:block;color:var(--muted);font-size:11.5px}
+.phone{background:#8CABD9;border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:8px}
+.bub{background:#fff;border-radius:14px;padding:10px 12px;font-size:13px;white-space:pre-wrap;max-width:88%}
+.bub.att{border:1.5px dashed #C7D3E6;color:var(--muted);font-size:12px}
+.hist{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+.hi{border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:12.5px}
+.hi .t{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.hi .t b{font-size:14px;color:var(--ink)}
+.st{font-size:11px;border-radius:999px;padding:0 8px;font-weight:700}
+.st-done{background:var(--green-soft);color:var(--green)}.st-wait{background:#FFF1D2;color:#8A5A00}.st-cancel{background:var(--soft);color:var(--muted)}
+.hi .n{color:var(--muted);margin-top:4px}
+.hi .rr{font-weight:700;color:var(--ink)}
+.quota{font-size:12px;color:var(--muted);margin-top:8px}
+.quota b{color:var(--ink)}
+.scs{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:12px}
+.sc{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:8px}
+.sc.on{border-color:var(--green);box-shadow:inset 4px 0 0 var(--green)}
+.sc .h{display:flex;align-items:center;gap:8px}
+.sc .h b{flex:1;font-size:14.5px;color:var(--ink)}
+.sc .when{font-size:12.5px;color:var(--ink);background:var(--soft);border-radius:8px;padding:6px 10px}
+.sc .msg{font-size:12.5px;white-space:pre-wrap;color:var(--text);border-left:3px solid var(--line);padding-left:10px}
+.sc .ft{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:12px;color:var(--muted)}
+.sw{position:relative;width:44px;height:24px;border-radius:12px;border:0;background:#C9D2CE;cursor:pointer;flex:0 0 auto}
+.sw::after{content:"";position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#fff;transition:left .15s}
+.sw[aria-checked="true"]{background:var(--green)}.sw[aria-checked="true"]::after{left:23px}
+.sw:disabled{opacity:.5;cursor:default}
+.mini{border:1.5px solid var(--line);background:#fff;border-radius:8px;padding:5px 12px;font-size:12.5px;font-weight:700;cursor:pointer;color:var(--ink)}
+@media (max-width:820px){.bcgrid{grid-template-columns:1fr}.views{top:40px}}
 .foot{text-align:center;font-size:12px;color:var(--muted);margin:24px 0 10px}
 .foot a,.foot button{color:var(--green);background:none;border:0;cursor:pointer;text-decoration:underline;font-size:12px}
 .back{display:none}
@@ -136,6 +184,7 @@ button:focus-visible{outline:3px solid #F3B44B;outline-offset:2px}
 </head>
 <body>
 <header class="bar"><b>ONDO Agent｜CA画面</b><span class="mode" id="mode" hidden></span><span class="sp"></span><span class="upd" id="upd"></span><button id="reload">更新</button></header>
+<nav class="views" id="views" hidden aria-label="画面の切り替え"></nav>
 <div class="wrap" id="app"><div class="spin"></div><p class="empty">読み込んでいます…</p></div>
 
 <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
@@ -182,6 +231,14 @@ button:focus-visible{outline:3px solid #F3B44B;outline-offset:2px}
   let mockData = null;
   async function mockApi(action, x) {
     if (!mockData) mockData = await fetch('./mock.json', { cache: 'no-cache' }).then(r => r.json());
+    if (/^(bc|sc)/.test(action)) {
+      const bc = mockData.bc;
+      if (action === 'bcCreate') { const n = mockData.people.filter(p => matchFilter(p, x.filter)).length; bc.broadcasts.unshift({ id: 'm' + Date.now(), name: x.name || '無題の配信', createdAt: new Date().toISOString(), timing: x.timing, sendAt: x.sendAt, status: x.timing === 'now' ? '送信済み' : '予約', targets: n, real: 0, sent: 0, waiting: 0, demo: n, attach: bc.attachments[x.message.attach], reaction: null }); mockData.done = `${n}人が対象（見た目確認用のため送信しません）`; }
+      if (action === 'scSave') { const s = bc.scenarios.find(q => q.id === x.id); if (x.active != null) s.active = x.active; if (x.text != null) s.text = x.text; mockData.done = '保存しました（見た目確認用）'; }
+      if (action === 'scTest') mockData.done = '試し送信しました（見た目確認用のため送信しません）';
+      if (action === 'bcCancel') { bc.broadcasts.find(q => q.id === x.id).status = '取消'; mockData.done = '取り消しました'; }
+      return JSON.parse(JSON.stringify(mockData));
+    }
     if (action === 'log' || action === 'send') {
       const p = mockData.people.find(q => q.id === x.targetId);
       const type = action === 'send' ? 'LINE送信' : x.type;
@@ -199,6 +256,17 @@ button:focus-visible{outline:3px solid #F3B44B;outline-offset:2px}
   }
 
   function render() {
+    const nav = document.getElementById('views');
+    nav.hidden = false;
+    const v = state.view || 'people';
+    nav.innerHTML = [['people', '求職者'], ['bc', '配信'], ['sc', 'ステップ配信']].map(([k, l]) => `<button data-v="${k}" ${v === k ? 'aria-current="page"' : ''}>${l}</button>`).join('');
+    nav.querySelectorAll('button').forEach(b => b.onclick = () => { state.view = b.dataset.v; render(); window.scrollTo(0, 0); });
+    if (v === 'bc') return renderBc();
+    if (v === 'sc') return renderSc();
+    renderPeople();
+  }
+
+  function renderPeople() {
     const d = state.data;
     const ppl = d.people;
     const alerts = ppl.filter(p => p.alert);
@@ -269,6 +337,127 @@ button:focus-visible{outline:3px solid #F3B44B;outline-offset:2px}
     const back = document.getElementById('back');
     back.onclick = () => el.classList.remove('open');
     bindActions(p);
+  }
+
+  /* ---------- 配信 ---------- */
+  const BANDS = [['hot', '今すぐ連絡'], ['warm', '検討中'], ['mild', '関心あり'], ['cool', '様子見']];
+  const STAGES = ['登録のみ', '興味', '検討', '行動', '面談'];
+  function matchFilter(p, f) {
+    const has = (arr, v) => !arr || !arr.length || arr.indexOf(v) >= 0;
+    if (!has(f.stages, p.stage) || !has(f.bands, p.bandKey)) return false;
+    if (f.tags && f.tags.length && !p.tags.some(t => f.tags.indexOf(t) >= 0)) return false;
+    for (const label in (f.answers || {})) { const w = f.answers[label]; if (!w || !w.length) continue; const a = p.answers.find(x => x.label === label); if (!a || w.indexOf(a.value) < 0) return false; }
+    if (f.inactiveDays && Date.now() - (p.lastAt ? new Date(p.lastAt).getTime() : 0) < f.inactiveDays * 864e5) return false;
+    if (f.booking === 'yes' && !p.booking) return false; if (f.booking === 'no' && p.booking) return false;
+    if (f.resume === 'done' && p.resume !== '完成') return false; if (f.resume === 'notdone' && p.resume === '完成') return false;
+    return true;
+  }
+  function bcState() {
+    if (!state.bc) state.bc = { name: '', filter: { bands: [], stages: [], tags: [], answers: {}, inactiveDays: 0, booking: '', resume: '' }, text: '{名前}さん、こんにちは。\n', attach: 'jobs', timing: 'best', sendAt: '', busy: false };
+    return state.bc;
+  }
+  function renderBc() {
+    const d = state.data, bc = d.bc || { broadcasts: [], attachments: {} }, f = bcState();
+    const ppl = d.people;
+    const targets = ppl.filter(p => matchFilter(p, f.filter));
+    const real = targets.filter(p => p.realLine && (d.mode === 'owner' || p.self));
+    const tags = [...new Set(ppl.flatMap(p => p.tags))];
+    const ansLabels = (ppl[0] ? ppl[0].answers.map(a => a.label) : []).filter(l => l !== '資格');
+    const ansVals = l => [...new Set(ppl.map(p => (p.answers.find(a => a.label === l) || {}).value).filter(v => v && v !== '未回答'))];
+    const chips = (key, items, sel) => `<div class="chips">${items.map(([v, l]) => `<button class="chip" data-k="${key}" data-v="${esc(v)}" aria-pressed="${sel.indexOf(v) >= 0}">${esc(l)}</button>`).join('')}</div>`;
+    const one = (key, items, cur) => `<div class="chips">${items.map(([v, l]) => `<button class="chip" data-one="${key}" data-v="${esc(v)}" aria-pressed="${String(cur) === String(v)}">${esc(l)}</button>`).join('')}</div>`;
+    const first = targets.find(p => p.realLine) || targets[0];
+    const nm = first ? (first.self ? first.name : first.name.replace('（サンプル）', '')) : '〇〇';
+    const q = bc.quota && typeof bc.quota.used === 'number' ? bc.quota : null;
+    app.innerHTML = `
+      ${d.mode === 'demo' ? '<div class="intro"><b>配信のデモです。</b> 実際に届くのはあなたのLINEだけで、サンプルの求職者には送らず人数だけ数えます。</div>' : ''}
+      <div class="bcgrid">
+        <section class="panel" aria-label="配信をつくる">
+          <h2>配信をつくる</h2><p class="sub">温度感・ステージ・悩み・希望条件で、届ける人を絞り込めます。</p>
+          <div class="grp"><b>配信名（管理用）</b><input type="text" id="bName" maxlength="40" placeholder="例：検討中の人に新着求人" value="${esc(f.name)}"></div>
+          <div class="grp"><b>温度感</b>${chips('bands', BANDS, f.filter.bands)}</div>
+          <div class="grp"><b>ステージ</b>${chips('stages', STAGES.map(x => [x, x]), f.filter.stages)}</div>
+          ${tags.length ? `<div class="grp"><b>悩み（読んだコラム・大事にしたいこと）</b>${chips('tags', tags.map(x => [x, x]), f.filter.tags)}</div>` : ''}
+          <details ${Object.values(f.filter.answers).some(a => a && a.length) ? 'open' : ''}><summary>希望条件で絞り込む</summary>
+            ${ansLabels.map(l => `<div class="grp"><b>${esc(l)}</b>${chips('ans:' + l, ansVals(l).map(x => [x, x]), f.filter.answers[l] || [])}</div>`).join('')}</details>
+          <details ${f.filter.inactiveDays || f.filter.booking || f.filter.resume ? 'open' : ''}><summary>行動で絞り込む</summary>
+            <div class="grp"><b>最後の行動</b>${one('inactiveDays', [[0, '指定なし'], [7, '7日以上前'], [14, '14日以上前'], [21, '21日以上前']], f.filter.inactiveDays)}</div>
+            <div class="grp"><b>面談予約</b>${one('booking', [['', '指定なし'], ['yes', 'あり'], ['no', 'なし']], f.filter.booking)}</div>
+            <div class="grp"><b>応募書類</b>${one('resume', [['', '指定なし'], ['done', '完成'], ['notdone', '未完成']], f.filter.resume)}</div></details>
+          <div class="count" aria-live="polite"><b>${targets.length}</b><span>人が対象${d.mode === 'demo' ? `（実際に届くのは ${real.length}人）` : `（LINE に届くのは ${real.length}人）`}</span></div>
+          <div class="names">${targets.slice(0, 14).map(p => `<span>${esc(p.self ? 'あなた' : p.name.replace('（サンプル）', ''))}</span>`).join('')}${targets.length > 14 ? `<span>ほか${targets.length - 14}人</span>` : ''}</div>
+          <div class="grp"><b>メッセージ（{名前} は一人ずつの名前に置き換わります）</b><textarea id="bText" maxlength="1000">${esc(f.text)}</textarea>
+            <div class="frow" style="margin-top:6px"><button class="mini" id="insName">{名前} を入れる</button></div></div>
+          <div class="grp"><b>添付</b>${one('attach', Object.entries(bc.attachments || {}), f.attach)}</div>
+          <div class="grp timing"><b>送るタイミング</b>
+            <label><input type="radio" name="tm" value="best" ${f.timing === 'best' ? 'checked' : ''}><span>一人ひとりが LINE をよく開く時間に届ける（おすすめ）<small>行動データから時間を割り出し、各自の時間に順番に送ります。データが少ない人は職種の初期値（保育士は20時）</small></span></label>
+            <label><input type="radio" name="tm" value="now" ${f.timing === 'now' ? 'checked' : ''}><span>今すぐ送る</span></label>
+            <label><input type="radio" name="tm" value="at" ${f.timing === 'at' ? 'checked' : ''}><span>日時を指定する<input type="datetime-local" id="bAt" value="${esc(f.sendAt)}" style="margin-top:6px"></span></label></div>
+          <p class="quota">消費するメッセージ通数：<b>${real.length}通</b>${q ? `　今月の使用：<b>${q.used}</b>${q.limit ? ` / ${q.limit}通` : '通'}` : ''}</p>
+          <div class="frow"><button class="go" id="bSend" ${f.busy || !targets.length ? 'disabled' : ''}>${f.busy ? '処理しています…' : f.timing === 'now' ? '送信する' : '配信を予約する'}</button></div>
+        </section>
+        <section aria-label="プレビューと配信履歴">
+          <div class="panel"><h2>プレビュー（${esc(nm)}さんの場合）</h2>
+            <div class="phone">${f.text.trim() ? `<div class="bub">${esc(f.text.replace(/\{名前\}/g, nm))}</div>` : ''}${f.attach !== 'none' ? `<div class="bub att">［${esc((bc.attachments || {})[f.attach] || '')}］<br>${f.attach === 'jobs' ? 'この人の希望条件に合う求人カードが、一人ずつ自動で入ります' : f.attach === 'column' ? 'この人の悩みに合うコラムが、一人ずつ自動で入ります' : 'ボタンつきのカードが入ります'}</div>` : ''}</div></div>
+          <div class="panel" style="margin-top:14px"><h2>配信履歴</h2><p class="sub">反応率＝送ってから48時間以内に、求人を見る・相談するなどの操作をした人の割合（LINE では個別の既読が取れないため）</p>
+            <div class="hist">${(bc.broadcasts || []).length ? bc.broadcasts.map(h => `<div class="hi"><div class="t"><b>${esc(h.name)}</b><span class="st ${h.status === '送信済み' ? 'st-done' : h.status === '取消' ? 'st-cancel' : 'st-wait'}">${esc(h.status)}</span></div>
+              <div class="n">${abs(h.createdAt)} 作成｜${h.timing === 'best' ? '各自の時間帯' : h.timing === 'at' ? abs(h.sendAt) + ' に配信' : '即時'}｜添付：${esc(h.attach)}</div>
+              <div class="n">対象 ${h.targets}人（届く ${h.real}人・サンプル ${h.demo}人）｜送信済み ${h.sent}人${h.waiting ? `・待機 ${h.waiting}人` : ''}｜反応率 <span class="rr">${h.reaction ? h.reaction.rate + '%' : '—'}</span></div>
+              ${['予約', '送信中'].indexOf(h.status) >= 0 && h.waiting ? `<div class="frow" style="margin-top:6px"><button class="mini" data-cancel="${esc(h.id)}">残りを取り消す</button></div>` : ''}</div>`).join('') : '<p class="empty" style="padding:14px">まだ配信はありません</p>'}</div></div>
+        </section>
+      </div>`;
+    const keep = () => { f.name = document.getElementById('bName').value; f.text = document.getElementById('bText').value; f.sendAt = document.getElementById('bAt').value; };
+    const rr = () => { keep(); const y = scrollY; renderBc(); scrollTo(0, y); };
+    app.querySelectorAll('[data-k]').forEach(b => b.onclick = () => {
+      const k = b.dataset.k, v = b.dataset.v;
+      if (k.indexOf('ans:') === 0) { const l = k.slice(4); const a = f.filter.answers[l] = f.filter.answers[l] || []; const i = a.indexOf(v); i >= 0 ? a.splice(i, 1) : a.push(v); }
+      else { const a = f.filter[k]; const i = a.indexOf(v); i >= 0 ? a.splice(i, 1) : a.push(v); }
+      rr();
+    });
+    app.querySelectorAll('[data-one]').forEach(b => b.onclick = () => { const k = b.dataset.one; const v = b.dataset.v; if (k === 'attach') f.attach = v; else f.filter[k] = k === 'inactiveDays' ? Number(v) : v; rr(); });
+    app.querySelectorAll('input[name=tm]').forEach(r => r.onchange = () => { f.timing = r.value; rr(); });
+    document.getElementById('bText').oninput = e => { f.text = e.target.value; };
+    document.getElementById('insName').onclick = () => { const t = document.getElementById('bText'); const i = t.selectionStart || t.value.length; t.value = t.value.slice(0, i) + '{名前}' + t.value.slice(i); f.text = t.value; rr(); };
+    document.getElementById('bText').onchange = rr;
+    app.querySelectorAll('[data-cancel]').forEach(b => b.onclick = async () => { if (!confirm('まだ届いていない分を取り消しますか？')) return; await doAct('bcCancel', { id: b.dataset.cancel }); });
+    document.getElementById('bSend').onclick = async () => {
+      keep();
+      if (f.timing === 'at' && !f.sendAt) return toast('配信日時を指定してください');
+      const msg = `${targets.length}人が対象です（LINEに届くのは${real.length}人）。${f.timing === 'now' ? '今すぐ送信' : '配信を予約'}しますか？`;
+      if (!confirm(msg)) return;
+      f.busy = true; rr();
+      const ok = await doAct('bcCreate', { name: f.name, filter: f.filter, message: { text: f.text, attach: f.attach }, timing: f.timing, sendAt: f.timing === 'at' ? new Date(f.sendAt).toISOString() : '' });
+      f.busy = false; if (ok) { state.bc = null; } render();
+    };
+  }
+  async function doAct(action, x) {
+    try { const j = await api(action, x); state.data = j; render(); toast(j.done || '完了しました'); return true; }
+    catch (e) { toast(e.message); return false; }
+  }
+
+  /* ---------- ステップ配信 ---------- */
+  function renderSc() {
+    const d = state.data, bc = d.bc || { scenarios: [], attachments: {} };
+    const owner = d.mode === 'owner';
+    state.scEdit = state.scEdit || '';
+    app.innerHTML = `
+      <div class="intro"><b>人材紹介向けのステップ配信</b>を最初から用意しています。条件に当てはまった人に、その人が LINE をよく開く時間に1回だけ届きます。${owner ? 'オンにした配信が自動で動きます（初期はすべてオフ）。' : 'デモでは「自分に試し送信」で、実際に届く内容を確認できます。オン・オフと編集は運用者だけができます。'}</div>
+      <div class="scs">${(bc.scenarios || []).map(s => `<article class="sc ${s.active ? 'on' : ''}">
+        <div class="h"><b>${esc(s.name)}</b><button class="sw" role="switch" aria-checked="${s.active}" aria-label="${esc(s.name)}をオン・オフ" data-sw="${esc(s.id)}" ${owner ? '' : 'disabled'}></button></div>
+        <div class="when">きっかけ：${esc(s.when)}</div>
+        ${state.scEdit === s.id ? `<div class="form" style="margin:0">
+          <label for="d_${s.id}">日数</label><input type="number" id="d_${s.id}" min="1" max="90" value="${s.days}">
+          <label for="t_${s.id}">メッセージ（{名前} は名前に置き換わります）</label><textarea id="t_${s.id}" maxlength="1000">${esc(s.text)}</textarea>
+          <label>添付</label><select id="a_${s.id}">${Object.entries(bc.attachments || {}).map(([k, l]) => `<option value="${k}" ${k === s.attach ? 'selected' : ''}>${esc(l)}</option>`).join('')}</select>
+          <div class="frow"><button class="go" data-save="${esc(s.id)}">保存</button><button class="mini" data-edit="">やめる</button></div></div>`
+        : `<div class="msg">${esc(s.text)}</div><div class="ft"><span>添付：${esc(s.attachLabel)}</span></div>`}
+        <div class="ft"><span>送信 ${s.reaction ? s.reaction.sent : 0}人</span><span>反応率 <b style="color:var(--ink)">${s.reaction ? s.reaction.rate + '%' : '—'}</b></span></div>
+        <div class="frow" style="margin-top:0">${owner ? (state.scEdit === s.id ? '' : `<button class="mini" data-edit="${esc(s.id)}">編集</button>`) : `<button class="mini" data-test="${esc(s.id)}">自分に試し送信</button>`}</div>
+      </article>`).join('')}</div>`;
+    app.querySelectorAll('[data-sw]').forEach(b => b.onclick = () => doAct('scSave', { id: b.dataset.sw, active: b.getAttribute('aria-checked') !== 'true' }));
+    app.querySelectorAll('[data-edit]').forEach(b => b.onclick = () => { state.scEdit = b.dataset.edit; renderSc(); });
+    app.querySelectorAll('[data-save]').forEach(b => b.onclick = async () => { const id = b.dataset.save; const ok = await doAct('scSave', { id, days: Number(document.getElementById('d_' + id).value), text: document.getElementById('t_' + id).value, attach: document.getElementById('a_' + id).value }); if (ok) { state.scEdit = ''; renderSc(); } });
+    app.querySelectorAll('[data-test]').forEach(b => b.onclick = async () => { b.disabled = true; await doAct('scTest', { id: b.dataset.test }); });
   }
 
   /* ---------- 対応：LINEで送る／対応を記録 ---------- */
