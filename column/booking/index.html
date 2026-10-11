@@ -42,27 +42,56 @@ h2{font-size:15px;color:var(--ink);margin:22px 0 8px}
 .badge{display:inline-grid;place-items:center;min-width:18px;height:18px;border-radius:9px;font-size:11px;font-weight:700;padding:0 4px}
 .badge.tpl{background:var(--star-soft);color:var(--star)}
 .badge.me{background:var(--warm-soft);color:var(--warm)}
-/* 日付の帯 */
-.days{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 10px;margin:0 -20px;padding-left:20px;padding-right:20px;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch}
-.days::-webkit-scrollbar{display:none}
-.day{flex:0 0 62px;scroll-snap-align:start;border:1.5px solid var(--line);background:#fff;border-radius:12px;padding:8px 0 6px;text-align:center;font:inherit;color:var(--text);cursor:pointer}
-.day .w{display:block;font-size:11px;color:var(--muted)}
-.day .d{display:block;font-size:17px;font-weight:700;color:var(--ink);line-height:1.3}
-.day .n{display:block;font-size:10.5px;color:var(--green);margin-top:2px}
-.day.sat .w{color:#2F6DB5}.day.sun .w{color:var(--danger)}
-.day[aria-pressed="true"]{background:var(--green);border-color:var(--green)}
-.day[aria-pressed="true"] .w,.day[aria-pressed="true"] .d,.day[aria-pressed="true"] .n{color:#fff}
-.day:disabled{opacity:.45;cursor:default}
-.day:disabled .n{color:var(--muted)}
-/* 時刻 */
-.grp{font-size:12px;font-weight:700;color:var(--muted);margin:16px 0 8px;letter-spacing:.04em}
-.times{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-.time{position:relative;border:1.5px solid var(--line);background:#fff;border-radius:10px;padding:10px 0;font:inherit;font-size:15px;font-weight:700;color:var(--ink);cursor:pointer;font-variant-numeric:tabular-nums}
-.time.rec{border-color:#EBCB7A;background:#FFFBEF}
-.time .bd{position:absolute;top:-7px;right:-4px;display:flex;gap:2px}
-.time[aria-pressed="true"]{background:var(--green);border-color:var(--green);color:#fff}
-.time.cur{outline:2px dashed var(--warm);outline-offset:2px}
-.empty{font-size:14px;color:var(--muted);background:var(--soft);border-radius:12px;padding:16px;text-align:center}
+/* カレンダー */
+.cal{border:1.5px solid var(--line);border-radius:16px;padding:12px 10px 8px;background:#fff}
+.cal-h{display:flex;align-items:center;justify-content:space-between;padding:0 4px 8px}
+.cal-h b{font-size:16px;color:var(--ink)}
+.cal-h button,.wk-h button{width:36px;height:36px;border-radius:50%;border:1.5px solid var(--line);background:#fff;color:var(--ink);font:inherit;font-size:16px;cursor:pointer;display:grid;place-items:center}
+.cal-h button:disabled,.wk-h button:disabled{opacity:.3;cursor:default}
+.cal-g{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;text-align:center}
+.cal-g .wh{font-size:11px;color:var(--muted);padding:2px 0 4px}
+.cal-g .wh.sun{color:var(--danger)}.cal-g .wh.sat{color:#2F6DB5}
+.cd{border:0;background:none;font:inherit;padding:4px 0 2px;border-radius:12px;cursor:pointer;color:var(--ink);min-height:48px;display:flex;flex-direction:column;align-items:center;gap:1px}
+.cd .n{width:30px;height:30px;line-height:30px;border-radius:50%;font-size:15px;font-weight:700;font-variant-numeric:tabular-nums}
+.cd .mk{font-size:10px;line-height:1;height:10px;color:var(--green)}
+.cd .mk.star{color:var(--star)}.cd .mk.full,.cd .mk.off{color:var(--muted)}
+.cd.sun .n{color:var(--danger)}.cd.sat .n{color:#2F6DB5}
+.cd.today .n{box-shadow:inset 0 0 0 1.5px var(--line)}
+.cd.sel .n{background:var(--green);color:#fff;box-shadow:none}
+.cd:disabled{cursor:default}
+.cd:disabled .n{color:#C5CDC9;font-weight:400}
+.cd.pad{visibility:hidden}
+.cal-lg{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:11px;color:var(--muted);padding:8px 4px 0;border-top:1px solid var(--line);margin-top:6px}
+.cal-lg i{font-style:normal;color:var(--green)}.cal-lg i.star{color:var(--star)}
+/* 5日分の時間表 */
+.wk{margin-top:18px;scroll-margin-top:var(--sticky,60px)}
+.wk-h{position:sticky;top:var(--sticky,60px);z-index:4;background:var(--bg);display:grid;grid-template-columns:40px repeat(5,1fr) ;gap:4px;align-items:end;padding:8px 0 6px;border-bottom:1px solid var(--line)}
+.wk-h .nav{grid-column:1;display:flex;flex-direction:column;gap:4px;align-items:center}
+.wk-h button{width:32px;height:28px;border-radius:8px;font-size:13px}
+.dh{text-align:center;border-radius:10px;padding:4px 0;line-height:1.25}
+.dh b{display:block;font-size:15px;color:var(--ink);font-variant-numeric:tabular-nums}
+.dh span{font-size:11px;color:var(--muted)}
+.dh.sel{background:var(--green-soft)}.dh.sel b{color:var(--green)}
+.dh.sun span{color:var(--danger)}.dh.sat span{color:#2F6DB5}
+.wk-b{display:grid;grid-template-columns:40px repeat(5,1fr);gap:4px;padding-top:6px;touch-action:pan-y}
+.tc{position:relative}
+.tl{position:absolute;right:4px;transform:translateY(-50%);font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+.tl.rec{color:var(--star);font-weight:700}
+.col{position:relative;border-radius:10px;background:repeating-linear-gradient(-45deg,#F4F6F5 0 6px,#ECEFED 6px 12px)}
+.col.rec-bg::before{content:"";position:absolute;left:0;right:0;top:var(--rt);height:var(--rh);background:rgba(235,203,122,.18);border-radius:6px}
+.col .hl{position:absolute;left:0;right:0;border-top:1px solid rgba(0,0,0,.05)}
+.blk{position:absolute;left:2px;right:2px;border-radius:10px;background:#fff;border:1.5px solid #9FD3BF;cursor:pointer;overflow:hidden;
+  background-image:repeating-linear-gradient(to bottom,transparent 0 calc(var(--h) - 1px),rgba(15,123,95,.18) calc(var(--h) - 1px) var(--h))}
+.blk.rec{border-color:#E5C068;background-color:#FFFBEF}
+.blk .k{position:absolute;top:4px;left:0;right:0;text-align:center;font-size:12px;font-weight:700;color:var(--green)}
+.blk.rec .k{color:var(--star)}
+.off-l{position:absolute;inset:0;display:grid;place-items:center;font-size:12px;color:var(--muted);writing-mode:vertical-rl;letter-spacing:.3em}
+.pick{position:absolute;left:2px;right:2px;border-radius:10px;background:var(--warm);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;text-align:center;line-height:1.3;box-shadow:0 2px 8px rgba(0,0,0,.18);pointer-events:none;z-index:2}
+.curb{position:absolute;left:2px;right:2px;border-radius:10px;border:2px dashed var(--warm);pointer-events:none;z-index:1}
+.wk-note{font-size:12px;color:var(--muted);margin:10px 0 0}
+.selbar{display:flex;flex-direction:column;justify-content:center;flex:1;min-width:0;font-size:12px;color:var(--muted);line-height:1.35}
+.selbar b{font-size:16px;color:var(--ink);white-space:nowrap;font-variant-numeric:tabular-nums}
+.selbar span{white-space:nowrap}
 /* 入力 */
 .field{margin:14px 0}
 .field label{display:block;font-size:13px;font-weight:700;color:var(--ink);margin-bottom:6px}
@@ -110,8 +139,10 @@ html.t-friendly .top{border-bottom:3px dotted var(--line)}
 html.t-friendly .prog{height:10px;border-radius:999px;background:var(--soft)}
 html.t-friendly .prog i{border-radius:999px;background:repeating-linear-gradient(-45deg,var(--green) 0 8px,#68B592 8px 16px)}
 html.t-friendly .opt,html.t-friendly .sum{border-width:2px;border-radius:20px}
-html.t-friendly .day{border-radius:18px;border-width:2px}
-html.t-friendly .time{border-radius:999px;border-width:2px}
+html.t-friendly .cal{border-width:2px;border-radius:22px}
+html.t-friendly .col{border-radius:14px;background:repeating-linear-gradient(-45deg,#FBF3EA 0 6px,#F5EBDF 6px 12px)}
+html.t-friendly .blk{border-radius:14px;border-width:2px}
+html.t-friendly .pick{border-radius:14px}
 html.t-friendly .legend,html.t-friendly .note,html.t-friendly .warn,html.t-friendly .empty{border-radius:16px}
 html.t-friendly input[type=tel],html.t-friendly textarea{border-width:2px;border-radius:14px}
 html.t-friendly .bottom{background:rgba(255,251,245,.96);border-top:3px dotted var(--line)}
@@ -166,17 +197,14 @@ html.t-friendly .btn.warm{box-shadow:0 4px 0 #D06C5A}
     if (action === 'status') return Promise.resolve({ ok: true, booking: qs.get('booked') ? mockBooking('phone', 2, 20, 0) : null, methods, topics: ['転職するか迷っている', '求人を紹介してほしい', '給与・条件の相談', '書類・面接の相談', '今の職場の悩み'], hints });
     if (action === 'slots') {
       const min = methods.find(m => m.key === p.method).min, days = [];
-      const now = new Date(); const base = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()) - 9 * 3600e3);
-      for (let i = 0; i < 14; i++) {
-        const d0 = new Date(base.getTime() + i * 864e5 + 9 * 3600e3); const wd = d0.getUTCDay(); const slots = [];
-        if (wd !== 0) for (let m = 600; m + min <= 1320; m += 30) {
-          if ((i * 7 + m / 30) % 5 === 0 || (i === 0 && m < 1080)) continue;
-          const h = Math.floor(m / 60); const rec = []; if (h >= 20) rec.push('tpl'); if (h === 21) rec.push('me');
-          slots.push({ start: new Date(base.getTime() + i * 864e5 + m * 60e3).toISOString(), time: `${h}:${String(m % 60).padStart(2, '0')}`, rec });
-        }
-        days.push({ date: '', label: `${d0.getUTCMonth() + 1}/${d0.getUTCDate()}`, wd: WD[wd], closed: wd === 0, slots });
+      const now = new Date(); const t0 = new Date(now.getTime() + 9 * 3600e3);
+      for (let i = 0; i < 30; i++) {
+        const d0 = new Date(Date.UTC(t0.getUTCFullYear(), t0.getUTCMonth(), t0.getUTCDate() + i)); const wd = d0.getUTCDay();
+        let cells = '';
+        for (let k = 0; k < 24; k++) { const m = 600 + k * 30; const busy = (i === 0) || ((i * 5 + k * 3) % 11 < 3) || (i % 4 === 1 && k > 19 && k < 23); cells += wd === 0 || busy || m + min > 1320 ? 'x' : 'o'; }
+        days.push({ date: d0.toISOString().slice(0, 10), y: d0.getUTCFullYear(), m: d0.getUTCMonth() + 1, d: d0.getUTCDate(), wd, closed: wd === 0, holiday: '', cells });
       }
-      return Promise.resolve({ ok: true, days, hints, current: null });
+      return Promise.resolve({ ok: true, days, hints, open: 10, close: 22, step: 30, minutes: min, current: null });
     }
     if (action === 'book') { const b = mockBooking(p.method, 0, 0, 0, p.start); return Promise.resolve({ ok: true, booking: b }); }
     return Promise.resolve({ ok: true });
@@ -185,7 +213,7 @@ html.t-friendly .btn.warm{box-shadow:0 4px 0 #D06C5A}
     const m = { phone: ['電話', 30], online: ['オンライン', 45], visit: ['来社', 60] }[method];
     const s = iso ? new Date(iso) : new Date(Math.floor(Date.now() / 864e5) * 864e5 + dd * 864e5 + (h - 9) * 3600e3 + mi * 60e3);
     const e = new Date(s.getTime() + m[1] * 60e3);
-    return { id: 'mock', method, methodLabel: m[0], minutes: m[1], note: method === 'phone' ? '担当からお電話します' : '', start: s.toISOString(), end: e.toISOString(), label: `${fmt(s).md}${fmt(s).hm}〜${fmt(e).hm}`, meetUrl: method === 'online' ? 'https://meet.google.com/xxx-xxxx-xxx' : '', gcalUrl: '#', icsUrl: '#' };
+    return { id: 'mock', method, methodLabel: m[0], minutes: m[1], note: method === 'phone' ? '担当からお電話します' : '', start: s.toISOString(), end: e.toISOString(), label: `${fmt(s).md}${fmt(s).hm}〜${fmt(e).hm}`, caName: '佐藤（デモ）', deadline: '前日 22:00', changeable: !qs.get('locked'), meetUrl: method === 'online' ? 'https://meet.google.com/xxx-xxxx-xxx' : '', gcalUrl: '#', icsUrl: '#' };
   }
 
   /* ---------- 表示の部品 ---------- */
@@ -227,14 +255,22 @@ html.t-friendly .btn.warm{box-shadow:0 4px 0 #D06C5A}
     app.innerHTML = `
       <h1>ご予約中の面談</h1>
       <div class="sum"><div class="when">${esc(s.md)}</div><div class="big">${esc(s.hm)}〜${esc(e.hm)}</div><div class="how">${esc(b.methodLabel)}（${b.minutes}分）</div>
-        <dl><dt>ご案内</dt><dd>${esc(b.note || '')}</dd>${b.meetUrl ? `<dt>参加URL</dt><dd><a href="${esc(b.meetUrl)}">${esc(b.meetUrl)}</a></dd>` : ''}</dl></div>
+        <dl>${b.caName ? `<dt>担当</dt><dd>${esc(b.caName.replace('（デモ）', ''))}</dd>` : ''}<dt>ご案内</dt><dd>${esc(b.note || '')}</dd><dt>変更の期限</dt><dd>${esc(b.deadline || '')}まで</dd>${b.meetUrl ? `<dt>参加URL</dt><dd><a href="${esc(b.meetUrl)}">${esc(b.meetUrl)}</a></dd>` : ''}</dl></div>
       <div class="links">
         <a class="lbtn" href="${esc(b.gcalUrl)}" data-ext>Googleカレンダーに追加</a>
         ${b.icsUrl ? `<a class="lbtn" href="${esc(b.icsUrl)}" data-ext>iPhoneのカレンダーに追加</a>` : ''}
-        <button class="lbtn danger" id="cancel">予約をキャンセルする</button>
+        ${b.changeable === false ? '' : '<button class="lbtn danger" id="cancel">予約をキャンセルする</button>'}
       </div>
+      ${b.changeable === false ? `<div class="warn">変更・キャンセルの期限（${esc(b.deadline)}）を過ぎています。ご都合が悪くなったときは、トークでご連絡ください。</div>` : ''}
       ${state.err ? `<p class="err">${esc(state.err)}</p>` : ''}`;
     bindExternal();
+    document.getElementById('top').hidden = true;
+    if (b.changeable === false) {
+      setNav(`<button class="btn sub" id="close">閉じる</button><button class="btn primary" id="talk">トークで連絡する</button>`);
+      document.getElementById('close').onclick = closeWin;
+      document.getElementById('talk').onclick = async () => { await sendChat('面談の日程について相談したいです'); closeWin(); };
+      return;
+    }
     setNav(`<button class="btn sub" id="close">閉じる</button><button class="btn primary" id="change">日時・方法を変更</button>`);
     document.getElementById('close').onclick = closeWin;
     document.getElementById('change').onclick = () => { state.method = b.method; state.step = 0; render(); };
@@ -255,7 +291,7 @@ html.t-friendly .btn.warm{box-shadow:0 4px 0 #D06C5A}
     const ms = state.info.methods;
     app.innerHTML = `<h1>どの方法で話しますか？</h1><p class="lead">いちばん気軽なものを選んでください。</p>
       ${ms.map(m => `<button class="opt" data-m="${m.key}" aria-pressed="${state.method === m.key}"><span class="ic">${ICON[m.key] || ''}</span><span><b>${esc(m.label)}</b><small>${esc(m.note)}</small></span><span class="min">${m.min}分</span></button>`).join('')}`;
-    app.querySelectorAll('.opt').forEach(b => b.onclick = () => { state.method = b.dataset.m; state.start = ''; state.days = []; render(); });
+    app.querySelectorAll('.opt').forEach(b => b.onclick = () => { state.method = b.dataset.m; state.start = ''; state.days = []; state.ws = null; render(); });
     setNav(`<button class="btn sub" id="back">戻る</button><button class="btn primary" id="next" ${state.method ? '' : 'disabled'}>次へ</button>`);
     document.getElementById('back').onclick = () => { state.step = -1; render(); };
     document.getElementById('next').onclick = async () => { state.step = 1; await loadSlots(); };
@@ -267,12 +303,17 @@ html.t-friendly .btn.warm{box-shadow:0 4px 0 #D06C5A}
     setNav('');
     try {
       const j = await api('slots', { method: state.method });
-      state.days = j.days; state.hints = j.hints; state.current = j.current;
-      if (!state.start) {
-        const firstRec = j.days.findIndex(d => d.slots.some(s => s.rec.length));
-        const firstAny = j.days.findIndex(d => d.slots.length);
-        state.dayIdx = firstRec >= 0 ? firstRec : Math.max(0, firstAny);
+      Object.assign(state, { days: j.days, hints: j.hints || {}, current: j.current, open: j.open, close: j.close, stepMin: j.step, minutes: j.minutes });
+      const idxOf = iso => state.days.findIndex(d => d.date === ymdOf(iso));
+      if (state.start && idxOf(state.start) >= 0) state.sel = idxOf(state.start);
+      else if (state.current && idxOf(state.current) >= 0) state.sel = idxOf(state.current);
+      else {
+        const rec = state.days.findIndex(d => recCells(d).some(Boolean));
+        const any = state.days.findIndex(d => /o/.test(d.cells));
+        state.sel = rec >= 0 ? rec : Math.max(0, any);
       }
+      state.month = monthKey(state.days[state.sel]);
+      state.ws = centerOn(state.sel);
       render();
     } catch (e) {
       app.innerHTML = `<p class="err">${esc(e.message)}</p>`;
@@ -281,32 +322,157 @@ html.t-friendly .btn.warm{box-shadow:0 4px 0 #D06C5A}
     }
   }
 
-  function renderSlots() {
-    const h = state.hints || {};
-    const day = state.days[state.dayIdx] || { slots: [] };
-    const groups = [['午前', 0, 12], ['午後', 12, 18], ['夜', 18, 24]].map(([g, f, t]) => [g, f, t]);
-    const legend = [h.tpl ? `<span><span class="badge tpl">★</span>${esc(h.tpl.label)}</span>` : '', h.me ? `<span><span class="badge me">♥</span>${esc(h.me.label)}</span>` : ''].join('');
+  /* ---- 日時選択：カレンダー＋5日分の時間表 ---- */
+  const CELL = 30; // 30分あたりの高さ（px）
+  const ymdOf = iso => { const t = new Date(new Date(iso).getTime() + 9 * 3600e3); return t.toISOString().slice(0, 10); };
+  const monthKey = d => `${d.y}-${d.m}`;
+  const cellMin = k => state.open * 60 + k * state.stepMin;
+  const hm = min => `${Math.floor(min / 60)}:${String(min % 60).padStart(2, '0')}`;
+  const isRecMin = min => { const h = Math.floor(min / 60), hs = state.hints || {}; return (hs.tpl && h >= hs.tpl.from && h < hs.tpl.to) || (hs.me && h === hs.me.hour); };
+  const recCells = d => [...d.cells].map((c, k) => c === 'o' && isRecMin(cellMin(k)));
+  const startIso = (d, k) => { const min = cellMin(k); return new Date(Date.UTC(d.y, d.m - 1, d.d, Math.floor(min / 60) - 9, min % 60)).toISOString(); };
+  const centerOn = i => Math.min(Math.max(0, i - 2), Math.max(0, state.days.length - 5));
+  const windowStart = () => (state.ws == null ? centerOn(state.sel) : state.ws);
+
+  function calendarHtml() {
+    const [y, m] = state.month.split('-').map(Number);
+    const months = [...new Set(state.days.map(monthKey))];
+    const mi = months.indexOf(state.month);
+    const first = new Date(Date.UTC(y, m - 1, 1)).getUTCDay();
+    const last = new Date(Date.UTC(y, m, 0)).getUTCDate();
+    const byDate = {}; state.days.forEach((d, i) => { if (d.y === y && d.m === m) byDate[d.d] = i; });
+    let cells = '日月火水木金土'.split('').map((w, i) => `<div class="wh ${i === 0 ? 'sun' : i === 6 ? 'sat' : ''}">${w}</div>`).join('');
+    for (let i = 0; i < first; i++) cells += '<div class="cd pad"></div>';
+    for (let dd = 1; dd <= last; dd++) {
+      const i = byDate[dd]; const d = state.days[i]; const wd = (first + dd - 1) % 7;
+      let mk = '', cls = '', label = '';
+      if (d) {
+        if (d.closed) { mk = '<span class="mk off">休</span>'; label = d.holiday ? `祝日（${d.holiday}）` : '休み'; }
+        else if (recCells(d).some(Boolean)) { mk = '<span class="mk star">★</span>'; label = 'おすすめの時間に空きあり'; }
+        else if (/o/.test(d.cells)) { mk = '<span class="mk">●</span>'; label = '空きあり'; }
+        else { mk = '<span class="mk full">×</span>'; label = '満席'; }
+      }
+      cls = `${wd === 0 ? 'sun' : wd === 6 ? 'sat' : ''} ${i === 0 ? 'today' : ''} ${i === state.sel ? 'sel' : ''}`;
+      cells += `<button class="cd ${cls}" ${d ? `data-i="${i}"` : 'disabled'} aria-pressed="${i === state.sel}" aria-label="${m}月${dd}日${label ? '、' + label : ''}"><span class="n">${dd}</span>${mk || '<span class="mk"></span>'}</button>`;
+    }
+    return `<div class="cal"><div class="cal-h"><button id="pm" ${mi > 0 ? '' : 'disabled'} aria-label="前の月">‹</button><b>${y}年${m}月</b><button id="nm" ${mi < months.length - 1 ? '' : 'disabled'} aria-label="次の月">›</button></div>
+      <div class="cal-g">${cells}</div>
+      <div class="cal-lg"><span><i class="star">★</i> おすすめの時間に空き</span><span><i>●</i> 空きあり</span><span>× 満席</span><span>休 休み</span></div></div>`;
+  }
+
+  function weekHtml() {
+    const ws = windowStart();
+    const cols = state.days.slice(ws, ws + 5);
+    const n = state.days[0].cells.length;
+    const H = n * CELL;
+    const hs = state.hints || {};
+    // 時刻の列
+    let axis = '';
+    for (let k = 0; k <= n; k += 2) {
+      const min = cellMin(k), h = Math.floor(min / 60);
+      const rec = k < n && isRecMin(min);
+      const me = hs.me && h === hs.me.hour;
+      axis += `<span class="tl ${rec ? 'rec' : ''}" style="top:${k * CELL}px">${me ? '♥' : rec ? '★' : ''}${h}:00</span>`;
+    }
+    // おすすめの時間帯（薄い色）
+    let rt = -1, rb = -1;
+    for (let k = 0; k < n; k++) if (isRecMin(cellMin(k))) { if (rt < 0) rt = k; rb = k + 1; }
+    const colHtml = (d, i) => {
+      let inner = '';
+      for (let k = 2; k < n; k += 2) inner += `<span class="hl" style="top:${k * CELL}px"></span>`;
+      if (d.closed) inner += `<span class="off-l">${d.holiday ? esc(d.holiday) : '休み'}</span>`;
+      // 連続する空きをひとつのブロックにまとめる
+      const rec = recCells(d);
+      for (let k = 0; k < n;) {
+        if (d.cells[k] !== 'o') { k++; continue; }
+        let e = k; while (e < n && d.cells[e] === 'o') e++;
+        const anyRec = rec.slice(k, e).some(Boolean);
+        inner += `<div class="blk ${anyRec ? 'rec' : ''}" data-i="${i}" data-k="${k}" data-e="${e}" style="top:${k * CELL}px;height:${(e - k) * CELL}px;--h:${CELL}px"><span class="k">空</span></div>`;
+        k = e;
+      }
+      if (state.current && ymdOf(state.current) === d.date) {
+        const k = state.days[i].cells.length && ((new Date(state.current).getTime() - new Date(startIso(d, 0)).getTime()) / 60e3) / state.stepMin;
+        inner += `<div class="curb" style="top:${k * CELL}px;height:${state.minutes / state.stepMin * CELL}px"></div>`;
+      }
+      if (state.start && ymdOf(state.start) === d.date) {
+        const k = ((new Date(state.start).getTime() - new Date(startIso(d, 0)).getTime()) / 60e3) / state.stepMin;
+        const sMin = cellMin(k);
+        inner += `<div class="pick" style="top:${k * CELL}px;height:${state.minutes / state.stepMin * CELL}px">${hm(sMin)}<br>〜${hm(sMin + state.minutes)}</div>`;
+      }
+      return `<div class="col ${rt >= 0 && !d.closed ? 'rec-bg' : ''}" style="height:${H}px;--rt:${rt * CELL}px;--rh:${(rb - rt) * CELL}px" data-i="${i}">${inner}</div>`;
+    };
+    const head = cols.map((d, j) => `<div class="dh ${ws + j === state.sel ? 'sel' : ''} ${d.wd === 0 ? 'sun' : d.wd === 6 ? 'sat' : ''}"><b>${d.m}/${d.d}</b><span>${'日月火水木金土'[d.wd]}</span></div>`).join('');
+    return `<section class="wk" id="wk" aria-label="${cols[0].m}/${cols[0].d}から5日間の空き時間">
+      <div class="wk-h"><div class="nav"><button id="pw" ${ws > 0 ? '' : 'disabled'} aria-label="前の5日">◀</button><button id="nw" ${ws + 5 < state.days.length ? '' : 'disabled'} aria-label="次の5日">▶</button></div>${head}</div>
+      <div class="wk-b" id="wkb"><div class="tc" style="height:${H}px">${axis}</div>${cols.map((d, j) => colHtml(d, ws + j)).join('')}</div>
+      <p class="wk-note">「空」をタップすると、その時刻から${state.minutes}分の面談を予約できます。左右にスワイプすると前後の日を見られます。${state.current ? '点線の枠は、いまの予約です。' : ''}</p>
+    </section>`;
+  }
+
+  function renderSlots(opts) {
+    opts = opts || {};
+    const hs = state.hints || {};
+    const legend = [hs.tpl ? `<span><span class="badge tpl">★</span>${esc(hs.tpl.label)}</span>` : '', hs.me ? `<span><span class="badge me">♥</span>${esc(hs.me.label)}</span>` : ''].join('');
     app.innerHTML = `<h1>日時を選んでください</h1>
       ${legend ? `<div class="legend">${legend}</div>` : ''}
-      <div class="days" id="days">${state.days.map((d, i) => {
-        const cls = d.wd === '土' ? 'sat' : d.wd === '日' ? 'sun' : '';
-        const n = d.closed ? '休み' : d.slots.length ? (d.slots.some(s => s.rec.length) ? '★ 空きあり' : '空きあり') : '満席';
-        return `<button class="day ${cls}" data-i="${i}" aria-pressed="${i === state.dayIdx}" ${d.slots.length ? '' : 'disabled'} aria-label="${esc(d.label)}（${d.wd}）${n}"><span class="w">${d.wd}</span><span class="d">${esc(d.label)}</span><span class="n">${n}</span></button>`;
-      }).join('')}</div>
-      ${day.slots.length ? [['おすすめの時間', s => s.rec.length]].concat(groups.map(([g, from, to]) => [g, s => { const hh = Number(s.time.split(':')[0]); return !s.rec.length && hh >= from && hh < to; }])).map(([g, ok]) => {
-        const list = day.slots.filter(ok);
-        if (!list.length) return '';
-        return `<div class="grp">${g === 'おすすめの時間' ? '★ ' + g : g}</div><div class="times">${list.map(s => `<button class="time ${s.rec.length ? 'rec' : ''} ${state.current === s.start ? 'cur' : ''}" data-s="${s.start}" aria-pressed="${state.start === s.start}" aria-label="${s.time}${s.rec.length ? '（' + recLabel(s.rec) + '）' : ''}">${s.time}${s.rec.length ? `<span class="bd">${badges(s.rec)}</span>` : ''}</button>`).join('')}</div>`;
-      }).join('') : '<div class="empty">この日は空きがありません。ほかの日を選んでください。</div>'}
-      ${state.current ? '<p class="lead" style="margin-top:14px">点線の枠は、いまの予約の時間です。</p>' : ''}
+      ${calendarHtml()}
+      ${weekHtml()}
       ${state.err ? `<p class="err">${esc(state.err)}</p>` : ''}`;
-    app.querySelectorAll('.day').forEach(b => b.onclick = () => { state.dayIdx = Number(b.dataset.i); render(); });
-    app.querySelectorAll('.time').forEach(b => b.onclick = () => { state.start = b.dataset.s; state.err = ''; render(); });
-    const sel = app.querySelector('.day[aria-pressed="true"]');
-    if (sel) document.getElementById('days').scrollLeft = sel.offsetLeft - 20;
-    setNav(`<button class="btn sub" id="back">戻る</button><button class="btn primary" id="next" ${state.start ? '' : 'disabled'}>次へ</button>`);
+    document.documentElement.style.setProperty('--sticky', (document.getElementById('top').offsetHeight || 0) + 'px');
+    // カレンダー
+    const pm = document.getElementById('pm'), nm = document.getElementById('nm');
+    const months = [...new Set(state.days.map(monthKey))];
+    pm.onclick = () => { state.month = months[months.indexOf(state.month) - 1]; renderSlots({ keep: true }); };
+    nm.onclick = () => { state.month = months[months.indexOf(state.month) + 1]; renderSlots({ keep: true }); };
+    app.querySelectorAll('.cd[data-i]').forEach(b => b.onclick = () => { state.sel = Number(b.dataset.i); state.ws = centerOn(state.sel); renderSlots({ keep: true, scroll: true }); });
+    // 5日の移動（ボタン・スワイプ）
+    const shift = dir => {
+      const ws = windowStart();
+      const nws = Math.min(Math.max(0, ws + dir * 5), Math.max(0, state.days.length - 5));
+      if (nws === ws) return;
+      state.ws = nws;
+      state.sel = Math.min(state.days.length - 1, nws + 2);
+      state.month = monthKey(state.days[state.sel]);
+      renderSlots({ keep: true });
+    };
+    document.getElementById('pw').onclick = () => shift(-1);
+    document.getElementById('nw').onclick = () => shift(1);
+    const wkb = document.getElementById('wkb');
+    let sx = 0, sy = 0;
+    wkb.addEventListener('touchstart', e => { sx = e.touches[0].clientX; sy = e.touches[0].clientY; }, { passive: true });
+    wkb.addEventListener('touchend', e => {
+      const dx = e.changedTouches[0].clientX - sx, dy = e.changedTouches[0].clientY - sy;
+      if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) shift(dx < 0 ? 1 : -1);
+    }, { passive: true });
+    // 空きブロックのタップ → その位置の30分マスを選ぶ
+    app.querySelectorAll('.blk').forEach(el => el.onclick = ev => {
+      const r = el.getBoundingClientRect();
+      const k = Number(el.dataset.k) + Math.min(Number(el.dataset.e) - Number(el.dataset.k) - 1, Math.max(0, Math.floor((ev.clientY - r.top) / CELL)));
+      const i = Number(el.dataset.i);
+      state.start = startIso(state.days[i], k); state.sel = i; state.err = '';
+      state.month = monthKey(state.days[i]);
+      // 表示範囲（state.ws）は動かさない。指の下の表が動かないように
+      const y = window.scrollY; renderSlots({ keep: true }); window.scrollTo(0, y);
+    });
+    // 下の帯
+    if (state.start) {
+      const s = fmt(state.start), e = fmt(new Date(new Date(state.start).getTime() + state.minutes * 60e3).toISOString());
+      setNav(`<button class="btn sub" id="back" style="flex:0 0 22%">戻る</button><div class="selbar"><span>${esc(s.md)}</span><b>${esc(s.hm)}〜${esc(e.hm)}</b></div><button class="btn primary" id="next" style="flex:0 0 34%">次へ</button>`);
+      document.getElementById('next').onclick = () => { state.step = 2; render(); };
+    } else {
+      setNav(`<button class="btn sub" id="back">戻る</button><div class="selbar">時間表の「空」をタップして選んでください</div>`);
+    }
     document.getElementById('back').onclick = () => { state.step = 0; render(); };
-    document.getElementById('next').onclick = () => { state.step = 2; render(); };
+    // 日付を選んだら、時間表へなめらかにスクロール（おすすめ時間か、その日最初の空きの位置へ）
+    if (opts.scroll) {
+      const d = state.days[state.sel];
+      const rec = recCells(d).findIndex(Boolean);
+      const k = rec >= 0 ? rec : Math.max(0, d.cells.indexOf('o'));
+      const wkb2 = document.getElementById('wkb');
+      const sticky = (document.getElementById('top').offsetHeight || 0) + document.querySelector('.wk-h').offsetHeight;
+      const y = wkb2.getBoundingClientRect().top + window.scrollY + Math.max(0, k - 2) * CELL - sticky - 4;
+      requestAnimationFrame(() => window.scrollTo({ top: y, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' }));
+    }
   }
 
   function renderDetail() {
