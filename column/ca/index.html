@@ -189,6 +189,7 @@ button:focus-visible{outline:3px solid #F3B44B;outline-offset:2px}
 
 <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 <script src="../config.js"></script>
+<script src="../api.js"></script>
 <script>
 (function () {
   const cfg = window.ONDO_CONFIG || {};
@@ -221,8 +222,7 @@ button:focus-visible{outline:3px solid #F3B44B;outline-offset:2px}
     if (!cfg.gasUrl) throw new Error('サーバーの設定がありません');
     const key = keyFromHash();
     const body = Object.assign({ ondoCa: 1, action }, key ? { key } : { userId: state.uid }, extra || {});
-    const res = await fetch(cfg.gasUrl, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify(body) });
-    const j = await res.json();
+    const j = await window.ondoApi(cfg.gasUrl, body);
     if (!j.ok) { if (j.badKey) { store.set(''); ownerKey = ''; } throw new Error(j.error || '読み込みに失敗しました'); }
     return j;
   }
