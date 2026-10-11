@@ -1,0 +1,425 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>面談の予約</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<script src="../config.js"></script>
+<script src="../theme.js"></script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap">
+<style>
+/* 面談予約：方法 → 日時 → 内容 → 確認。下に固定の「次へ」 */
+:root{
+  --ink:#14302A; --text:#2A3330; --muted:#6B7A75; --line:#DDE5E1; --soft:#F2F6F4;
+  --green:#0F7B5F; --green-soft:#E3F1EC; --warm:#E06A2E; --warm-soft:#FCEDE4; --bg:#FFFFFF; --danger:#B3361F;
+  --star:#C98A0B; --star-soft:#FFF4D6;
+  --font:"Zen Kaku Gothic New","Hiragino Sans","Noto Sans JP",system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--text)}
+body{font-family:var(--font);font-size:16px;line-height:1.7;-webkit-text-size-adjust:100%}
+.top{position:sticky;top:0;z-index:5;background:var(--bg);padding:12px 20px 10px;border-bottom:1px solid var(--line)}
+.top .row{display:flex;justify-content:space-between;align-items:baseline;font-size:12px;color:var(--muted)}
+.top .row b{color:var(--green);font-size:13px}
+.prog{height:6px;background:var(--line);border-radius:3px;margin-top:6px;overflow:hidden}
+.prog i{display:block;height:100%;background:var(--green);border-radius:3px;transition:width .25s}
+main{max-width:640px;margin:0 auto;padding:20px 20px 120px}
+h1{font-size:22px;line-height:1.5;margin:4px 0 6px;color:var(--ink);text-wrap:balance}
+h2{font-size:15px;color:var(--ink);margin:22px 0 8px}
+.lead{color:var(--muted);font-size:14px;margin:0 0 16px}
+/* 方法の選択 */
+.opt{display:flex;gap:14px;align-items:center;width:100%;text-align:left;border:1.5px solid var(--line);background:#fff;border-radius:14px;padding:14px 16px;margin:10px 0;font:inherit;color:var(--text);cursor:pointer}
+.opt[aria-pressed="true"]{border-color:var(--green);background:var(--green-soft)}
+.opt .ic{flex:0 0 44px;height:44px;border-radius:50%;background:var(--soft);display:grid;place-items:center}
+.opt[aria-pressed="true"] .ic{background:#fff}
+.opt b{display:block;color:var(--ink);font-size:16px}
+.opt small{display:block;color:var(--muted);font-size:12.5px;line-height:1.5;margin-top:2px}
+.opt .min{margin-left:auto;font-size:12px;color:var(--muted);white-space:nowrap}
+/* おすすめの凡例 */
+.legend{display:flex;flex-direction:column;gap:6px;background:var(--soft);border-radius:12px;padding:10px 14px;font-size:12.5px;margin:0 0 14px}
+.legend span{display:flex;gap:8px;align-items:center}
+.badge{display:inline-grid;place-items:center;min-width:18px;height:18px;border-radius:9px;font-size:11px;font-weight:700;padding:0 4px}
+.badge.tpl{background:var(--star-soft);color:var(--star)}
+.badge.me{background:var(--warm-soft);color:var(--warm)}
+/* 日付の帯 */
+.days{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 10px;margin:0 -20px;padding-left:20px;padding-right:20px;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch}
+.days::-webkit-scrollbar{display:none}
+.day{flex:0 0 62px;scroll-snap-align:start;border:1.5px solid var(--line);background:#fff;border-radius:12px;padding:8px 0 6px;text-align:center;font:inherit;color:var(--text);cursor:pointer}
+.day .w{display:block;font-size:11px;color:var(--muted)}
+.day .d{display:block;font-size:17px;font-weight:700;color:var(--ink);line-height:1.3}
+.day .n{display:block;font-size:10.5px;color:var(--green);margin-top:2px}
+.day.sat .w{color:#2F6DB5}.day.sun .w{color:var(--danger)}
+.day[aria-pressed="true"]{background:var(--green);border-color:var(--green)}
+.day[aria-pressed="true"] .w,.day[aria-pressed="true"] .d,.day[aria-pressed="true"] .n{color:#fff}
+.day:disabled{opacity:.45;cursor:default}
+.day:disabled .n{color:var(--muted)}
+/* 時刻 */
+.grp{font-size:12px;font-weight:700;color:var(--muted);margin:16px 0 8px;letter-spacing:.04em}
+.times{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.time{position:relative;border:1.5px solid var(--line);background:#fff;border-radius:10px;padding:10px 0;font:inherit;font-size:15px;font-weight:700;color:var(--ink);cursor:pointer;font-variant-numeric:tabular-nums}
+.time.rec{border-color:#EBCB7A;background:#FFFBEF}
+.time .bd{position:absolute;top:-7px;right:-4px;display:flex;gap:2px}
+.time[aria-pressed="true"]{background:var(--green);border-color:var(--green);color:#fff}
+.time.cur{outline:2px dashed var(--warm);outline-offset:2px}
+.empty{font-size:14px;color:var(--muted);background:var(--soft);border-radius:12px;padding:16px;text-align:center}
+/* 入力 */
+.field{margin:14px 0}
+.field label{display:block;font-size:13px;font-weight:700;color:var(--ink);margin-bottom:6px}
+.field small{font-weight:400;color:var(--muted);margin-left:6px}
+input[type=tel],textarea{width:100%;font:inherit;font-size:16px;padding:11px 12px;border:1.5px solid var(--line);border-radius:10px;background:#fff;color:var(--text)}
+textarea{min-height:96px;line-height:1.7;resize:vertical}
+input:focus,textarea:focus{outline:none;border-color:var(--green)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1.5px solid var(--line);background:#fff;color:var(--text);border-radius:999px;padding:7px 14px;font:inherit;font-size:14px;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--green-soft);border-color:var(--green);color:var(--green);font-weight:700}
+.cnt{font-size:12px;color:var(--muted);text-align:right;margin-top:4px}
+.err{color:var(--danger);font-size:13px;margin-top:6px}
+.note{font-size:13px;color:var(--muted);background:var(--soft);border-radius:10px;padding:12px 14px;margin:14px 0}
+.warn{font-size:13px;color:#7A3B12;background:var(--warm-soft);border-radius:10px;padding:12px 14px;margin:14px 0}
+/* 予約内容 */
+.sum{border:1.5px solid var(--line);border-radius:16px;padding:16px 18px;margin:14px 0;background:#fff}
+.sum .when{font-size:13px;color:var(--muted)}
+.sum .big{font-size:30px;font-weight:700;color:var(--warm);line-height:1.25;font-variant-numeric:tabular-nums}
+.sum .how{font-weight:700;color:var(--ink);margin-top:4px}
+.sum dl{margin:12px 0 0;padding-top:12px;border-top:1px solid var(--line);display:grid;grid-template-columns:6.5em 1fr;gap:6px 10px;font-size:14px}
+.sum dt{color:var(--muted)}.sum dd{margin:0;color:var(--ink);word-break:break-all}
+.links{display:flex;flex-direction:column;gap:10px;margin:16px 0}
+.lbtn{display:flex;align-items:center;justify-content:center;gap:8px;min-height:48px;border-radius:12px;border:1.5px solid var(--line);background:#fff;color:var(--ink);font:inherit;font-size:15px;font-weight:700;text-decoration:none;cursor:pointer}
+.lbtn.danger{color:var(--danger);border-color:transparent;background:transparent;font-weight:500;font-size:14px;min-height:40px}
+.done{width:64px;height:64px;border-radius:50%;background:var(--green-soft);display:grid;place-items:center;margin:14px auto 6px}
+.center{text-align:center}
+.spinner{width:36px;height:36px;border-radius:50%;border:4px solid var(--green-soft);border-top-color:var(--green);margin:40px auto 12px;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.spinner{animation:none}}
+.bottom{position:fixed;left:0;right:0;bottom:0;background:rgba(255,255,255,.96);border-top:1px solid var(--line);padding:12px 20px calc(12px + env(safe-area-inset-bottom,0px));display:flex;gap:10px;z-index:6}
+.btn{flex:1;min-height:50px;border-radius:12px;border:0;font:inherit;font-size:16px;font-weight:700;cursor:pointer}
+.btn.primary{background:var(--green);color:#fff}
+.btn.warm{background:var(--warm);color:#fff}
+.btn.sub{background:var(--soft);color:var(--ink);flex:0 0 30%}
+.btn:disabled{opacity:.5}
+.btn:focus-visible,.chip:focus-visible,.time:focus-visible,.day:focus-visible,.opt:focus-visible{outline:3px solid #F3B44B;outline-offset:2px}
+
+/* ===== 求職者向けデザイン（theme=friendly） ===== */
+html.t-friendly{
+  --ink:#5A4636; --text:#5A4636; --muted:#9A8473; --line:#EEDFCF; --soft:#FFF1E4;
+  --green:#4E9C7A; --green-soft:#E1F2E9; --warm:#E8826F; --warm-soft:#FDE3D9; --bg:#FFFBF5;
+  --font:"Zen Maru Gothic","Hiragino Maru Gothic ProN","Hiragino Sans","Noto Sans JP",system-ui,sans-serif;
+}
+html.t-friendly .top{border-bottom:3px dotted var(--line)}
+html.t-friendly .prog{height:10px;border-radius:999px;background:var(--soft)}
+html.t-friendly .prog i{border-radius:999px;background:repeating-linear-gradient(-45deg,var(--green) 0 8px,#68B592 8px 16px)}
+html.t-friendly .opt,html.t-friendly .sum{border-width:2px;border-radius:20px}
+html.t-friendly .day{border-radius:18px;border-width:2px}
+html.t-friendly .time{border-radius:999px;border-width:2px}
+html.t-friendly .legend,html.t-friendly .note,html.t-friendly .warn,html.t-friendly .empty{border-radius:16px}
+html.t-friendly input[type=tel],html.t-friendly textarea{border-width:2px;border-radius:14px}
+html.t-friendly .bottom{background:rgba(255,251,245,.96);border-top:3px dotted var(--line)}
+html.t-friendly .btn,html.t-friendly .lbtn{border-radius:999px}
+html.t-friendly .btn.primary{box-shadow:0 4px 0 #3F8566}
+html.t-friendly .btn.warm{box-shadow:0 4px 0 #D06C5A}
+</style>
+</head>
+<body>
+<header class="top" id="top" hidden>
+  <div class="row"><b id="stepLabel"></b><span id="stepCount"></span></div>
+  <div class="prog"><i id="bar"></i></div>
+</header>
+<main id="app"><div class="spinner"></div><p class="lead center">読み込んでいます…</p></main>
+<nav class="bottom" id="nav" hidden></nav>
+
+<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+<script>
+(function () {
+  const cfg = window.ONDO_CONFIG || {};
+  const app = document.getElementById('app');
+  const nav = document.getElementById('nav');
+  const qs = new URLSearchParams(location.search);
+  const MOCK = /mock(=|%3D)1/.test(location.search); // ブラウザでの見た目確認用（サーバーに送らない）
+  const STEPS = ['面談の方法', '日時', 'ご相談内容', '確認'];
+  const state = { uid: null, inClient: false, info: null, step: -1, method: '', days: [], dayIdx: 0, start: '', current: null, phone: '', topics: [], note: '', err: '', busy: false };
+
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const WD = '日月火水木金土';
+  const fmt = iso => { const d = new Date(iso); const t = new Date(d.getTime() + 9 * 3600e3); return { md: `${t.getUTCMonth() + 1}/${t.getUTCDate()}（${WD[t.getUTCDay()]}）`, hm: `${t.getUTCHours()}:${String(t.getUTCMinutes()).padStart(2, '0')}`, h: t.getUTCHours() }; };
+
+  const ICON = {
+    phone: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3h3l2 5-2.5 1.5a11 11 0 0 0 7 7L16 14l5 2v3a2 2 0 0 1-2 2A17 17 0 0 1 3 5a2 2 0 0 1 2-2"/></svg>',
+    online: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="6" width="13" height="12" rx="2"/><path d="M15.5 10.5 21 7.5v9l-5.5-3"/></svg>',
+    visit: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21V8l8-5 8 5v13"/><path d="M9 21v-6h6v6"/></svg>',
+    check: '<svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>'
+  };
+
+  /* ---------- サーバー ---------- */
+  async function api(action, payload) {
+    if (MOCK) return mockApi(action, payload || {});
+    if (!cfg.gasUrl) throw new Error('サーバーの設定がありません');
+    const res = await fetch(cfg.gasUrl, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify(Object.assign({ ondoBooking: 1, action, userId: state.uid }, payload || {})) });
+    const j = await res.json();
+    if (!j.ok) { const e = new Error(j.error || '処理に失敗しました'); e.taken = j.taken; throw e; }
+    return j;
+  }
+  /* 見た目確認用のダミー（?mock=1）。実際の予約は行わない */
+  function mockApi(action, p) {
+    const methods = [{ key: 'phone', label: '電話', min: 30, note: '担当からお電話します' }, { key: 'online', label: 'オンライン', min: 45, note: 'ビデオ通話（Google Meet）。カメラはオフでも大丈夫です' }, { key: 'visit', label: '来社', min: 60, note: 'オフィスで対面（デモのため住所は架空です）' }];
+    const hints = { tpl: { from: 20, to: 22, label: '保育士さんがつながりやすい時間（20時以降）' }, me: { hour: 21, label: 'あなたがよくLINEを開く時間（21時台）' } };
+    if (action === 'status') return Promise.resolve({ ok: true, booking: qs.get('booked') ? mockBooking('phone', 2, 20, 0) : null, methods, topics: ['転職するか迷っている', '求人を紹介してほしい', '給与・条件の相談', '書類・面接の相談', '今の職場の悩み'], hints });
+    if (action === 'slots') {
+      const min = methods.find(m => m.key === p.method).min, days = [];
+      const now = new Date(); const base = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()) - 9 * 3600e3);
+      for (let i = 0; i < 14; i++) {
+        const d0 = new Date(base.getTime() + i * 864e5 + 9 * 3600e3); const wd = d0.getUTCDay(); const slots = [];
+        if (wd !== 0) for (let m = 600; m + min <= 1320; m += 30) {
+          if ((i * 7 + m / 30) % 5 === 0 || (i === 0 && m < 1080)) continue;
+          const h = Math.floor(m / 60); const rec = []; if (h >= 20) rec.push('tpl'); if (h === 21) rec.push('me');
+          slots.push({ start: new Date(base.getTime() + i * 864e5 + m * 60e3).toISOString(), time: `${h}:${String(m % 60).padStart(2, '0')}`, rec });
+        }
+        days.push({ date: '', label: `${d0.getUTCMonth() + 1}/${d0.getUTCDate()}`, wd: WD[wd], closed: wd === 0, slots });
+      }
+      return Promise.resolve({ ok: true, days, hints, current: null });
+    }
+    if (action === 'book') { const b = mockBooking(p.method, 0, 0, 0, p.start); return Promise.resolve({ ok: true, booking: b }); }
+    return Promise.resolve({ ok: true });
+  }
+  function mockBooking(method, dd, h, mi, iso) {
+    const m = { phone: ['電話', 30], online: ['オンライン', 45], visit: ['来社', 60] }[method];
+    const s = iso ? new Date(iso) : new Date(Math.floor(Date.now() / 864e5) * 864e5 + dd * 864e5 + (h - 9) * 3600e3 + mi * 60e3);
+    const e = new Date(s.getTime() + m[1] * 60e3);
+    return { id: 'mock', method, methodLabel: m[0], minutes: m[1], note: method === 'phone' ? '担当からお電話します' : '', start: s.toISOString(), end: e.toISOString(), label: `${fmt(s).md}${fmt(s).hm}〜${fmt(e).hm}`, meetUrl: method === 'online' ? 'https://meet.google.com/xxx-xxxx-xxx' : '', gcalUrl: '#', icsUrl: '#' };
+  }
+
+  /* ---------- 表示の部品 ---------- */
+  function header() {
+    const top = document.getElementById('top');
+    if (state.step < 0) { top.hidden = true; return; }
+    top.hidden = false;
+    document.getElementById('stepLabel').textContent = STEPS[state.step];
+    document.getElementById('stepCount').textContent = `${state.step + 1} / ${STEPS.length}`;
+    document.getElementById('bar').style.width = `${((state.step + 1) / STEPS.length) * 100}%`;
+  }
+  function setNav(html) { nav.hidden = !html; nav.innerHTML = html || ''; }
+  const method = () => (state.info.methods || []).find(m => m.key === state.method);
+  const badges = rec => rec.map(r => `<span class="badge ${r}" aria-hidden="true">${r === 'tpl' ? '★' : '♥'}</span>`).join('');
+  const recLabel = rec => rec.map(r => r === 'tpl' ? 'おすすめ' : 'よく見る時間').join('・');
+
+  /* ---------- 画面 ---------- */
+  function render() {
+    header();
+    window.scrollTo(0, 0);
+    if (state.step === -2) return renderDone();
+    if (state.step === -1) return state.info.booking ? renderBooked() : renderIntro();
+    [renderMethod, renderSlots, renderDetail, renderConfirm][state.step]();
+  }
+
+  function renderIntro() {
+    app.innerHTML = `
+      <h1>キャリアアドバイザーとの面談を予約する</h1>
+      <p class="lead">空いている日時から選ぶだけで予約できます。転職するか迷っている段階でも大丈夫です。</p>
+      <div class="note"><b>所要時間：約1分</b><br>電話・オンライン・来社から選べます。予約後の変更・キャンセルもこの画面からできます。</div>
+      ${!state.inClient && !MOCK ? '<div class="warn">LINEアプリの中で開くと予約できます。</div>' : ''}`;
+    setNav(`<button class="btn warm" id="go">日時を選ぶ</button>`);
+    document.getElementById('go').onclick = () => { state.step = 0; render(); };
+  }
+
+  function renderBooked() {
+    const b = state.info.booking;
+    const s = fmt(b.start), e = fmt(b.end);
+    app.innerHTML = `
+      <h1>ご予約中の面談</h1>
+      <div class="sum"><div class="when">${esc(s.md)}</div><div class="big">${esc(s.hm)}〜${esc(e.hm)}</div><div class="how">${esc(b.methodLabel)}（${b.minutes}分）</div>
+        <dl><dt>ご案内</dt><dd>${esc(b.note || '')}</dd>${b.meetUrl ? `<dt>参加URL</dt><dd><a href="${esc(b.meetUrl)}">${esc(b.meetUrl)}</a></dd>` : ''}</dl></div>
+      <div class="links">
+        <a class="lbtn" href="${esc(b.gcalUrl)}" data-ext>Googleカレンダーに追加</a>
+        ${b.icsUrl ? `<a class="lbtn" href="${esc(b.icsUrl)}" data-ext>iPhoneのカレンダーに追加</a>` : ''}
+        <button class="lbtn danger" id="cancel">予約をキャンセルする</button>
+      </div>
+      ${state.err ? `<p class="err">${esc(state.err)}</p>` : ''}`;
+    bindExternal();
+    setNav(`<button class="btn sub" id="close">閉じる</button><button class="btn primary" id="change">日時・方法を変更</button>`);
+    document.getElementById('close').onclick = closeWin;
+    document.getElementById('change').onclick = () => { state.method = b.method; state.step = 0; render(); };
+    document.getElementById('cancel').onclick = async () => {
+      if (!confirm(`${s.md}${s.hm}からの面談をキャンセルしますか？`)) return;
+      try {
+        await api('cancel');
+        await sendChat('面談の予約をキャンセルしました');
+        state.info.booking = null; state.err = '';
+        app.innerHTML = `<div class="done">${ICON.check}</div><h1 class="center">キャンセルしました</h1><p class="lead center">また話してみたくなったら、いつでも予約してくださいね。</p>`;
+        setNav(`<button class="btn primary" id="close2">トークに戻る</button>`);
+        document.getElementById('close2').onclick = closeWin;
+      } catch (e) { state.err = e.message; render(); }
+    };
+  }
+
+  function renderMethod() {
+    const ms = state.info.methods;
+    app.innerHTML = `<h1>どの方法で話しますか？</h1><p class="lead">いちばん気軽なものを選んでください。</p>
+      ${ms.map(m => `<button class="opt" data-m="${m.key}" aria-pressed="${state.method === m.key}"><span class="ic">${ICON[m.key] || ''}</span><span><b>${esc(m.label)}</b><small>${esc(m.note)}</small></span><span class="min">${m.min}分</span></button>`).join('')}`;
+    app.querySelectorAll('.opt').forEach(b => b.onclick = () => { state.method = b.dataset.m; state.start = ''; state.days = []; render(); });
+    setNav(`<button class="btn sub" id="back">戻る</button><button class="btn primary" id="next" ${state.method ? '' : 'disabled'}>次へ</button>`);
+    document.getElementById('back').onclick = () => { state.step = -1; render(); };
+    document.getElementById('next').onclick = async () => { state.step = 1; await loadSlots(); };
+  }
+
+  async function loadSlots() {
+    header();
+    app.innerHTML = '<div class="spinner"></div><p class="lead center">空いている日時を確認しています…</p>';
+    setNav('');
+    try {
+      const j = await api('slots', { method: state.method });
+      state.days = j.days; state.hints = j.hints; state.current = j.current;
+      if (!state.start) {
+        const firstRec = j.days.findIndex(d => d.slots.some(s => s.rec.length));
+        const firstAny = j.days.findIndex(d => d.slots.length);
+        state.dayIdx = firstRec >= 0 ? firstRec : Math.max(0, firstAny);
+      }
+      render();
+    } catch (e) {
+      app.innerHTML = `<p class="err">${esc(e.message)}</p>`;
+      setNav(`<button class="btn sub" id="back">戻る</button>`);
+      document.getElementById('back').onclick = () => { state.step = 0; render(); };
+    }
+  }
+
+  function renderSlots() {
+    const h = state.hints || {};
+    const day = state.days[state.dayIdx] || { slots: [] };
+    const groups = [['午前', 0, 12], ['午後', 12, 18], ['夜', 18, 24]].map(([g, f, t]) => [g, f, t]);
+    const legend = [h.tpl ? `<span><span class="badge tpl">★</span>${esc(h.tpl.label)}</span>` : '', h.me ? `<span><span class="badge me">♥</span>${esc(h.me.label)}</span>` : ''].join('');
+    app.innerHTML = `<h1>日時を選んでください</h1>
+      ${legend ? `<div class="legend">${legend}</div>` : ''}
+      <div class="days" id="days">${state.days.map((d, i) => {
+        const cls = d.wd === '土' ? 'sat' : d.wd === '日' ? 'sun' : '';
+        const n = d.closed ? '休み' : d.slots.length ? (d.slots.some(s => s.rec.length) ? '★ 空きあり' : '空きあり') : '満席';
+        return `<button class="day ${cls}" data-i="${i}" aria-pressed="${i === state.dayIdx}" ${d.slots.length ? '' : 'disabled'} aria-label="${esc(d.label)}（${d.wd}）${n}"><span class="w">${d.wd}</span><span class="d">${esc(d.label)}</span><span class="n">${n}</span></button>`;
+      }).join('')}</div>
+      ${day.slots.length ? [['おすすめの時間', s => s.rec.length]].concat(groups.map(([g, from, to]) => [g, s => { const hh = Number(s.time.split(':')[0]); return !s.rec.length && hh >= from && hh < to; }])).map(([g, ok]) => {
+        const list = day.slots.filter(ok);
+        if (!list.length) return '';
+        return `<div class="grp">${g === 'おすすめの時間' ? '★ ' + g : g}</div><div class="times">${list.map(s => `<button class="time ${s.rec.length ? 'rec' : ''} ${state.current === s.start ? 'cur' : ''}" data-s="${s.start}" aria-pressed="${state.start === s.start}" aria-label="${s.time}${s.rec.length ? '（' + recLabel(s.rec) + '）' : ''}">${s.time}${s.rec.length ? `<span class="bd">${badges(s.rec)}</span>` : ''}</button>`).join('')}</div>`;
+      }).join('') : '<div class="empty">この日は空きがありません。ほかの日を選んでください。</div>'}
+      ${state.current ? '<p class="lead" style="margin-top:14px">点線の枠は、いまの予約の時間です。</p>' : ''}
+      ${state.err ? `<p class="err">${esc(state.err)}</p>` : ''}`;
+    app.querySelectorAll('.day').forEach(b => b.onclick = () => { state.dayIdx = Number(b.dataset.i); render(); });
+    app.querySelectorAll('.time').forEach(b => b.onclick = () => { state.start = b.dataset.s; state.err = ''; render(); });
+    const sel = app.querySelector('.day[aria-pressed="true"]');
+    if (sel) document.getElementById('days').scrollLeft = sel.offsetLeft - 20;
+    setNav(`<button class="btn sub" id="back">戻る</button><button class="btn primary" id="next" ${state.start ? '' : 'disabled'}>次へ</button>`);
+    document.getElementById('back').onclick = () => { state.step = 0; render(); };
+    document.getElementById('next').onclick = () => { state.step = 2; render(); };
+  }
+
+  function renderDetail() {
+    const topics = state.info.topics || [];
+    const needPhone = state.method === 'phone';
+    app.innerHTML = `<h1>どんなことを話したいですか？</h1><p class="lead">当てはまるものを選んでください（いくつでも・なくてもOK）。</p>
+      <div class="chips">${topics.map(t => `<button class="chip" data-t="${esc(t)}" aria-pressed="${state.topics.includes(t)}">${esc(t)}</button>`).join('')}</div>
+      <div class="field"><label for="note">伝えておきたいこと<small>任意・200文字まで</small></label>
+        <textarea id="note" maxlength="200" placeholder="例：持ち帰り仕事が少ない園を探しています">${esc(state.note)}</textarea><div class="cnt" id="cnt">${state.note.length} / 200</div></div>
+      ${needPhone ? `<div class="field"><label for="phone">お電話する番号</label><input id="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="090-1234-5678" value="${esc(state.phone)}">
+        <div class="warn" style="margin-top:8px">デモ版のため、実在の番号は入力しないでください（例：090-0000-0000）</div></div>` : ''}
+      ${state.err ? `<p class="err">${esc(state.err)}</p>` : ''}`;
+    app.querySelectorAll('.chip').forEach(b => b.onclick = () => {
+      const t = b.dataset.t; state.topics = state.topics.includes(t) ? state.topics.filter(x => x !== t) : state.topics.concat(t);
+      b.setAttribute('aria-pressed', state.topics.includes(t));
+    });
+    const note = document.getElementById('note');
+    note.oninput = () => { state.note = note.value; document.getElementById('cnt').textContent = `${note.value.length} / 200`; };
+    const ph = document.getElementById('phone');
+    if (ph) ph.oninput = () => { state.phone = ph.value; };
+    setNav(`<button class="btn sub" id="back">戻る</button><button class="btn primary" id="next">確認へ</button>`);
+    document.getElementById('back').onclick = () => { state.step = 1; render(); };
+    document.getElementById('next').onclick = () => {
+      if (needPhone && !/^0\d{9,10}$/.test(state.phone.replace(/[^\d]/g, ''))) { state.err = '電話番号を正しく入力してください（例：090-1234-5678）'; return render(); }
+      state.err = ''; state.step = 3; render();
+    };
+  }
+
+  function renderConfirm() {
+    const m = method();
+    const s = fmt(state.start), e = fmt(new Date(new Date(state.start).getTime() + m.min * 60e3).toISOString());
+    const changing = !!state.info.booking;
+    app.innerHTML = `<h1>この内容で${changing ? '変更' : '予約'}しますか？</h1>
+      <div class="sum"><div class="when">${esc(s.md)}</div><div class="big">${esc(s.hm)}〜${esc(e.hm)}</div><div class="how">${esc(m.label)}（${m.min}分）</div>
+        <dl><dt>話したいこと</dt><dd>${esc(state.topics.join('、') || '未選択')}</dd>
+        ${state.note ? `<dt>伝えたいこと</dt><dd>${esc(state.note)}</dd>` : ''}
+        ${state.method === 'phone' ? `<dt>電話番号</dt><dd>${esc(state.phone)}</dd>` : ''}</dl></div>
+      <p class="lead">${changing ? 'いまの予約は取り消され、この日時に変わります。' : '予約すると、LINEのトークに確認のメッセージが届きます。'}前日と1時間前にもお知らせします。</p>
+      ${state.err ? `<p class="err">${esc(state.err)}</p>` : ''}`;
+    setNav(`<button class="btn sub" id="back">戻る</button><button class="btn warm" id="book" ${state.busy ? 'disabled' : ''}>${state.busy ? '予約しています…' : changing ? 'この内容で変更する' : 'この内容で予約する'}</button>`);
+    document.getElementById('back').onclick = () => { state.step = 2; render(); };
+    document.getElementById('book').onclick = book;
+  }
+
+  async function book() {
+    if (state.busy) return;
+    state.busy = true; state.err = ''; render();
+    try {
+      const j = await api('book', { method: state.method, start: state.start, topics: state.topics, note: state.note, phone: state.phone });
+      const changed = !!state.info.booking;
+      state.info.booking = j.booking; state.busy = false; state.step = -2; state.changed = changed;
+      render();
+      const s = fmt(j.booking.start);
+      const ok = await sendChat(`面談${changed ? 'の予約を変更しました' : 'を予約しました'}（${s.md}${s.hm}〜 ${j.booking.methodLabel}）`);
+      if (!ok && !MOCK) api('notify', { kind: 'booked' }).catch(() => {});
+    } catch (e) {
+      state.busy = false; state.err = e.message;
+      if (e.taken) { state.start = ''; state.step = 1; return loadSlots(); }
+      render();
+    }
+  }
+
+  function renderDone() {
+    const b = state.info.booking;
+    const s = fmt(b.start), e = fmt(b.end);
+    app.innerHTML = `<div class="done">${ICON.check}</div>
+      <h1 class="center">${state.changed ? '変更しました' : '予約できました'}</h1>
+      <div class="sum"><div class="when">${esc(s.md)}</div><div class="big">${esc(s.hm)}〜${esc(e.hm)}</div><div class="how">${esc(b.methodLabel)}（${b.minutes}分）</div>
+        ${b.meetUrl ? `<dl><dt>参加URL</dt><dd><a href="${esc(b.meetUrl)}">${esc(b.meetUrl)}</a></dd></dl>` : ''}</div>
+      <p class="lead">LINEのトークに確認のメッセージを送りました。スマホのカレンダーにも入れておくと安心です。</p>
+      <div class="links">
+        <a class="lbtn" href="${esc(b.gcalUrl)}" data-ext>Googleカレンダーに追加</a>
+        ${b.icsUrl ? `<a class="lbtn" href="${esc(b.icsUrl)}" data-ext>iPhoneのカレンダーに追加</a>` : ''}
+      </div>`;
+    bindExternal();
+    setNav(`<button class="btn primary" id="close">トークに戻る</button>`);
+    document.getElementById('close').onclick = closeWin;
+  }
+
+  /* ---------- LINE ---------- */
+  function bindExternal() {
+    app.querySelectorAll('a[data-ext]').forEach(a => a.onclick = ev => {
+      if (state.inClient && /^https:/.test(a.href)) { ev.preventDefault(); liff.openWindow({ url: a.href, external: true }); }
+    });
+  }
+  async function sendChat(text) {
+    if (!state.inClient) return false;
+    try { await liff.sendMessages([{ type: 'text', text }]); return true; } catch (e) { console.warn('sendMessages failed', e); return false; }
+  }
+  function closeWin() { if (state.inClient) liff.closeWindow(); else history.back(); }
+
+  async function start() {
+    try {
+      if (cfg.liffId && window.liff && !MOCK) {
+        await liff.init({ liffId: cfg.liffId });
+        state.inClient = liff.isInClient();
+        if (liff.isLoggedIn()) state.uid = (await liff.getProfile()).userId;
+      }
+    } catch (e) { console.warn('LIFF init failed', e); }
+    if (!state.uid && !MOCK) {
+      app.innerHTML = '<h1>面談の予約</h1><div class="warn">LINEアプリの中で開いてください。トークのメニューから「相談する」→「面談の日時を選ぶ」で開けます。</div>';
+      return;
+    }
+    try {
+      state.info = await api('status');
+      if (!state.info.booking && qs.get('step') === 'method') state.step = 0;
+      render();
+    } catch (e) {
+      app.innerHTML = `<h1>面談の予約</h1><p class="err">${esc(e.message)}</p>`;
+    }
+  }
+  start();
+})();
+</script>
+</body>
+</html>
