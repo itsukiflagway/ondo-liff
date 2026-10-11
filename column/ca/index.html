@@ -125,8 +125,11 @@ button{font:inherit;color:inherit}
 .panel .sub{font-size:12px;color:var(--muted);margin:0 0 6px}
 .grp{margin-top:12px}
 .grp>b{display:block;font-size:12px;color:var(--muted);margin-bottom:5px}
-.panel input[type=text],.panel input[type=datetime-local],.panel input[type=number],.panel select,.panel textarea{width:100%;font:inherit;font-size:14px;border:1.5px solid var(--line);border-radius:8px;padding:8px 10px;background:#fff;color:var(--text)}
-.panel textarea{min-height:120px;resize:vertical;line-height:1.7}
+.panel input[type=text],.panel input[type=datetime-local],.panel input[type=number],.panel select,.panel textarea,.scform input[type=text],.scform input[type=number],.scform select,.scform textarea{width:100%;font:inherit;font-size:14px;border:1.5px solid var(--line);border-radius:8px;padding:8px 10px;background:#fff;color:var(--text)}
+.panel textarea,.scform textarea{min-height:120px;resize:vertical;line-height:1.7}
+.scform .grp>b{display:block;font-size:12px;color:var(--muted);margin-bottom:5px}
+.scform .grp{margin-top:12px}
+.scform summary{font-size:12.5px;font-weight:700;color:var(--green);cursor:pointer;margin-top:12px}
 .panel details{margin-top:12px}
 .panel summary{font-size:12.5px;font-weight:700;color:var(--green);cursor:pointer}
 .count{display:flex;align-items:baseline;gap:8px;background:var(--green-soft);border-radius:10px;padding:10px 12px;margin-top:12px}
@@ -164,6 +167,34 @@ button{font:inherit;color:inherit}
 .sw:disabled{opacity:.5;cursor:default}
 .mini{border:1.5px solid var(--line);background:#fff;border-radius:8px;padding:5px 12px;font-size:12.5px;font-weight:700;cursor:pointer;color:var(--ink)}
 @media (max-width:820px){.bcgrid{grid-template-columns:1fr}.views{top:40px}}
+.sc .badge2{font-size:10.5px;font-weight:700;border-radius:4px;padding:0 6px;background:var(--soft);color:var(--muted);border:1px solid var(--line)}
+.sc.add{border:2px dashed var(--line);align-items:center;justify-content:center;min-height:180px;cursor:pointer;color:var(--green);font-weight:700;background:transparent}
+.sc .tgt{font-size:12px;color:var(--muted)}
+.scform{grid-column:1/-1;background:var(--card);border:1.5px solid var(--green);border-radius:14px;padding:16px}
+.scform h2{font-size:15px;margin:0 0 4px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.mini.danger{color:#B3361F;border-color:#F0C9C2}
+/* 分析 */
+.period{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:12px}
+.period input[type=date]{font:inherit;font-size:13px;border:1.5px solid var(--line);border-radius:8px;padding:5px 8px;background:#fff}
+.skpi{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-bottom:12px}
+.skpi .kpi b{font-size:22px}
+.skpi .kpi small{display:block;font-size:11px;color:var(--muted);font-weight:500;margin:0}
+.chartbox{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 14px 8px;margin-bottom:12px;position:relative}
+.chartbox h2{font-size:13px;margin:0 0 8px;color:var(--ink)}
+.chartbox svg{display:block;width:100%;height:auto;overflow:visible}
+.chartscroll{overflow-x:auto}
+.chartscroll svg{min-width:560px}
+table.st th:first-child,table.st td:first-child{min-width:13em}
+.tip{position:absolute;pointer-events:none;background:var(--ink);color:#fff;font-size:12px;border-radius:8px;padding:6px 10px;white-space:nowrap;transform:translate(-50%,-100%);box-shadow:0 4px 12px rgba(0,0,0,.2);z-index:5}
+table.st{width:100%;border-collapse:collapse;font-size:12.5px;background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+table.st th,table.st td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+table.st th:first-child,table.st td:first-child{text-align:left;white-space:normal}
+table.st th{background:var(--soft);color:var(--muted);font-weight:700;font-size:11.5px}
+table.st td .k{font-size:10.5px;color:var(--muted);border:1px solid var(--line);border-radius:4px;padding:0 5px;margin-right:6px}
+.tblwrap{overflow-x:auto;border-radius:14px}
+.samplenote{font-size:12px;background:#FFF1D2;color:#7A4E00;border-radius:10px;padding:8px 12px;margin-bottom:10px}
+@media (max-width:820px){.skpi{grid-template-columns:repeat(3,1fr)}.two{grid-template-columns:1fr}}
 .foot{text-align:center;font-size:12px;color:var(--muted);margin:24px 0 10px}
 .foot a,.foot button{color:var(--green);background:none;border:0;cursor:pointer;text-decoration:underline;font-size:12px}
 .back{display:none}
@@ -234,8 +265,11 @@ button:focus-visible{outline:3px solid #F3B44B;outline-offset:2px}
     if (/^(bc|sc)/.test(action)) {
       const bc = mockData.bc;
       if (action === 'bcCreate') { const n = mockData.people.filter(p => matchFilter(p, x.filter)).length; bc.broadcasts.unshift({ id: 'm' + Date.now(), name: x.name || '無題の配信', createdAt: new Date().toISOString(), timing: x.timing, sendAt: x.sendAt, status: x.timing === 'now' ? '送信済み' : '予約', targets: n, real: 0, sent: 0, waiting: 0, demo: n, attach: bc.attachments[x.message.attach], reaction: null }); mockData.done = `${n}人が対象（見た目確認用のため送信しません）`; }
-      if (action === 'scSave') { const s = bc.scenarios.find(q => q.id === x.id); if (x.active != null) s.active = x.active; if (x.text != null) s.text = x.text; mockData.done = '保存しました（見た目確認用）'; }
+      if (action === 'scSave') { const s = bc.scenarios.find(q => q.id === x.id); ['active', 'text', 'name', 'days', 'attach', 'hour', 'filter', 'trigger'].forEach(k => { if (x[k] != null) s[k] = x[k]; }); s.when = (bc.triggers[s.trigger] || '').replace('{days}', s.days); s.attachLabel = bc.attachments[s.attach]; mockData.done = '保存しました（見た目確認用）'; }
       if (action === 'scTest') mockData.done = '試し送信しました（見た目確認用のため送信しません）';
+      if (action === 'scAdd') { bc.scenarios.push({ id: 'm' + Date.now(), name: x.name || '無題のステップ配信', trigger: x.trigger, when: (bc.triggers[x.trigger] || '').replace('{days}', x.days), days: x.days, text: x.text, attach: x.attach, attachLabel: bc.attachments[x.attach], active: x.active, hour: x.hour, filter: x.filter, preset: '', reaction: null }); mockData.done = '追加しました（見た目確認用）'; }
+      if (action === 'scDelete') { bc.scenarios = bc.scenarios.filter(q => q.id !== x.id); mockData.done = '削除しました'; }
+      if (action === 'scReset') mockData.done = '初期設定に戻しました（見た目確認用）';
       if (action === 'bcCancel') { bc.broadcasts.find(q => q.id === x.id).status = '取消'; mockData.done = '取り消しました'; }
       return JSON.parse(JSON.stringify(mockData));
     }
@@ -259,10 +293,11 @@ button:focus-visible{outline:3px solid #F3B44B;outline-offset:2px}
     const nav = document.getElementById('views');
     nav.hidden = false;
     const v = state.view || 'people';
-    nav.innerHTML = [['people', '求職者'], ['bc', '配信'], ['sc', 'ステップ配信']].map(([k, l]) => `<button data-v="${k}" ${v === k ? 'aria-current="page"' : ''}>${l}</button>`).join('');
+    nav.innerHTML = [['people', '求職者'], ['bc', '配信'], ['sc', 'ステップ配信'], ['stats', '分析']].map(([k, l]) => `<button data-v="${k}" ${v === k ? 'aria-current="page"' : ''}>${l}</button>`).join('');
     nav.querySelectorAll('button').forEach(b => b.onclick = () => { state.view = b.dataset.v; render(); window.scrollTo(0, 0); });
     if (v === 'bc') return renderBc();
     if (v === 'sc') return renderSc();
+    if (v === 'stats') return renderStats();
     renderPeople();
   }
 
@@ -436,28 +471,176 @@ button:focus-visible{outline:3px solid #F3B44B;outline-offset:2px}
   }
 
   /* ---------- ステップ配信 ---------- */
+  function scDraft(src) {
+    src = src || {};
+    return { id: src.id || '', name: src.name || '', trigger: src.trigger || 'after_follow', days: src.days || 3, text: src.text != null ? src.text : '{名前}さん、こんにちは。\n', attach: src.attach || 'none',
+      hour: src.hour || 'best', active: !!src.active, filter: JSON.parse(JSON.stringify(src.filter || {})), preset: src.preset || '' };
+  }
+  function scFormHtml(f, bc) {
+    const fl = f.filter; fl.bands = fl.bands || []; fl.stages = fl.stages || []; fl.tags = fl.tags || [];
+    const tags = [...new Set(state.data.people.flatMap(p => p.tags))];
+    const chips = (key, items, sel) => `<div class="chips">${items.map(([v, l]) => `<button class="chip" data-sf="${key}" data-v="${esc(v)}" aria-pressed="${sel.indexOf(v) >= 0}">${esc(l)}</button>`).join('')}</div>`;
+    const hours = [['best', '一人ひとりが LINE をよく開く時間（おすすめ）']].concat(Array.from({ length: 15 }, (_, i) => [String(i + 8), `${i + 8}:00`]));
+    return `<section class="scform" id="scform" aria-label="ステップ配信の${f.id ? '編集' : '追加'}">
+      <h2>${f.id ? 'ステップ配信を編集' : 'ステップ配信を追加'}</h2>
+      <p class="sub" style="font-size:12px;color:var(--muted);margin:0 0 6px">${state.data.mode === 'owner' ? 'オンにすると、条件に当てはまった人に1人1回だけ自動で届きます。' : 'デモでは、あなた専用の下書きとして保存されます（自動配信はされません。「自分に試し送信」で届き方を確認できます）。'}</p>
+      <div class="grp"><b>名前（管理用）</b><input type="text" id="sfName" maxlength="40" value="${esc(f.name)}" placeholder="例：気になる保存のフォロー"></div>
+      <div class="two"><div class="grp"><b>きっかけ</b><select id="sfTrig">${Object.entries(bc.triggers || {}).map(([k, l]) => `<option value="${k}" ${k === f.trigger ? 'selected' : ''}>${esc(l.replace('{days}', 'N'))}</option>`).join('')}</select></div>
+        <div class="grp"><b>日数（N）</b><input type="number" id="sfDays" min="1" max="180" value="${f.days}"></div></div>
+      <div class="grp"><b>送る時刻</b><select id="sfHour">${hours.map(([v, l]) => `<option value="${v}" ${String(f.hour) === v ? 'selected' : ''}>${esc(l)}</option>`).join('')}</select></div>
+      <details ${fl.bands.length || fl.stages.length || fl.tags.length ? 'open' : ''}><summary>対象を絞り込む（任意）</summary>
+        <div class="grp"><b>温度感</b>${chips('bands', BANDS, fl.bands)}</div>
+        <div class="grp"><b>ステージ</b>${chips('stages', STAGES.map(x => [x, x]), fl.stages)}</div>
+        ${tags.length ? `<div class="grp"><b>悩み</b>${chips('tags', tags.map(x => [x, x]), fl.tags)}</div>` : ''}</details>
+      <div class="grp"><b>メッセージ（{名前} は一人ずつの名前に置き換わります）</b><textarea id="sfText" maxlength="1000">${esc(f.text)}</textarea></div>
+      <div class="grp"><b>添付</b><select id="sfAtt">${Object.entries(bc.attachments || {}).map(([k, l]) => `<option value="${k}" ${k === f.attach ? 'selected' : ''}>${esc(l)}</option>`).join('')}</select></div>
+      <label class="check" style="display:flex;gap:8px;align-items:center;margin-top:10px;font-size:13px"><input type="checkbox" id="sfOn" ${f.active ? 'checked' : ''}> ${state.data.mode === 'owner' ? 'オンにする（自動配信を始める）' : 'オンにする（デモでは表示上のみ）'}</label>
+      <div class="frow"><button class="go" id="sfSave" ${state.busy ? 'disabled' : ''}>${f.id ? '保存する' : '追加する'}</button><button class="mini" id="sfCancel">やめる</button>
+        ${f.preset ? '<button class="mini" id="sfReset" style="margin-left:auto">初期設定に戻す</button>' : ''}${f.id && !f.preset ? '<button class="mini danger" id="sfDel" style="margin-left:auto">削除する</button>' : ''}</div>
+    </section>`;
+  }
   function renderSc() {
-    const d = state.data, bc = d.bc || { scenarios: [], attachments: {} };
+    const d = state.data, bc = d.bc || { scenarios: [], attachments: {}, triggers: {} };
     const owner = d.mode === 'owner';
-    state.scEdit = state.scEdit || '';
+    const f = state.scForm; // 編集中の下書き（null なら閉じている）
+    const tgt = s => { const fl = s.filter || {}; const parts = []; if ((fl.bands || []).length) parts.push(fl.bands.map(b => (BANDS.find(x => x[0] === b) || [, b])[1]).join('・')); if ((fl.stages || []).length) parts.push(fl.stages.join('・')); if ((fl.tags || []).length) parts.push('悩み：' + fl.tags.join('・')); return parts.length ? '対象：' + parts.join('／') : '対象：全員'; };
     app.innerHTML = `
-      <div class="intro"><b>人材紹介向けのステップ配信</b>を最初から用意しています。条件に当てはまった人に、その人が LINE をよく開く時間に1回だけ届きます。${owner ? 'オンにした配信が自動で動きます（初期はすべてオフ）。' : 'デモでは「自分に試し送信」で、実際に届く内容を確認できます。オン・オフと編集は運用者だけができます。'}</div>
-      <div class="scs">${(bc.scenarios || []).map(s => `<article class="sc ${s.active ? 'on' : ''}">
-        <div class="h"><b>${esc(s.name)}</b><button class="sw" role="switch" aria-checked="${s.active}" aria-label="${esc(s.name)}をオン・オフ" data-sw="${esc(s.id)}" ${owner ? '' : 'disabled'}></button></div>
-        <div class="when">きっかけ：${esc(s.when)}</div>
-        ${state.scEdit === s.id ? `<div class="form" style="margin:0">
-          <label for="d_${s.id}">日数</label><input type="number" id="d_${s.id}" min="1" max="90" value="${s.days}">
-          <label for="t_${s.id}">メッセージ（{名前} は名前に置き換わります）</label><textarea id="t_${s.id}" maxlength="1000">${esc(s.text)}</textarea>
-          <label>添付</label><select id="a_${s.id}">${Object.entries(bc.attachments || {}).map(([k, l]) => `<option value="${k}" ${k === s.attach ? 'selected' : ''}>${esc(l)}</option>`).join('')}</select>
-          <div class="frow"><button class="go" data-save="${esc(s.id)}">保存</button><button class="mini" data-edit="">やめる</button></div></div>`
-        : `<div class="msg">${esc(s.text)}</div><div class="ft"><span>添付：${esc(s.attachLabel)}</span></div>`}
-        <div class="ft"><span>送信 ${s.reaction ? s.reaction.sent : 0}人</span><span>反応率 <b style="color:var(--ink)">${s.reaction ? s.reaction.rate + '%' : '—'}</b></span></div>
-        <div class="frow" style="margin-top:0">${owner ? (state.scEdit === s.id ? '' : `<button class="mini" data-edit="${esc(s.id)}">編集</button>`) : `<button class="mini" data-test="${esc(s.id)}">自分に試し送信</button>`}</div>
-      </article>`).join('')}</div>`;
-    app.querySelectorAll('[data-sw]').forEach(b => b.onclick = () => doAct('scSave', { id: b.dataset.sw, active: b.getAttribute('aria-checked') !== 'true' }));
-    app.querySelectorAll('[data-edit]').forEach(b => b.onclick = () => { state.scEdit = b.dataset.edit; renderSc(); });
-    app.querySelectorAll('[data-save]').forEach(b => b.onclick = async () => { const id = b.dataset.save; const ok = await doAct('scSave', { id, days: Number(document.getElementById('d_' + id).value), text: document.getElementById('t_' + id).value, attach: document.getElementById('a_' + id).value }); if (ok) { state.scEdit = ''; renderSc(); } });
+      <div class="intro"><b>人材紹介向けのステップ配信</b>を最初から用意しています。きっかけを選んで、パターンを自由に追加・編集できます。条件に当てはまった人に、1人1回だけ届きます。${owner ? 'オンにした配信が自動で動きます。' : '<br>デモでは、ここでの追加・編集はあなた専用の下書きです（自動配信はされません）。「自分に試し送信」で、実際に届く内容を確認できます。'}</div>
+      <div class="scs">
+        ${f && !f.id ? scFormHtml(f, bc) : ''}
+        ${(bc.scenarios || []).map(s => (f && f.id === s.id) ? scFormHtml(f, bc) : `<article class="sc ${s.active ? 'on' : ''}">
+          <div class="h"><b>${esc(s.name)}</b>${s.preset ? '<span class="badge2">初期設定</span>' : '<span class="badge2">追加</span>'}<button class="sw" role="switch" aria-checked="${s.active}" aria-label="${esc(s.name)}をオン・オフ" data-sw="${esc(s.id)}"></button></div>
+          <div class="when">きっかけ：${esc(s.when)}</div>
+          <div class="tgt">${esc(tgt(s))}｜送る時刻：${s.hour === 'best' ? 'LINE をよく開く時間' : esc(s.hour) + ':00'}</div>
+          <div class="msg">${esc(s.text || '（メッセージなし）')}</div><div class="ft"><span>添付：${esc(s.attachLabel)}</span></div>
+          <div class="ft"><span>${owner ? '送信' : '試し送信'} ${s.reaction ? s.reaction.sent : 0}件</span><span>反応率 <b style="color:var(--ink)">${s.reaction ? s.reaction.rate + '%' : '—'}</b></span></div>
+          <div class="frow" style="margin-top:0"><button class="mini" data-edit="${esc(s.id)}">編集</button>${owner ? '' : `<button class="mini" data-test="${esc(s.id)}">自分に試し送信</button>`}</div>
+        </article>`).join('')}
+        ${f ? '' : '<button class="sc add" id="scAdd">＋ ステップ配信を追加</button>'}
+      </div>`;
+    const sw = (id, on) => doAct('scSave', { id, active: on });
+    app.querySelectorAll('[data-sw]').forEach(b => b.onclick = () => sw(b.dataset.sw, b.getAttribute('aria-checked') !== 'true'));
+    app.querySelectorAll('[data-edit]').forEach(b => b.onclick = () => { state.scForm = scDraft(bc.scenarios.find(x => x.id === b.dataset.edit)); renderSc(); document.getElementById('scform').scrollIntoView({ behavior: 'smooth', block: 'center' }); });
     app.querySelectorAll('[data-test]').forEach(b => b.onclick = async () => { b.disabled = true; await doAct('scTest', { id: b.dataset.test }); });
+    const add = document.getElementById('scAdd'); if (add) add.onclick = () => { state.scForm = scDraft(); renderSc(); document.getElementById('sfName').focus(); };
+    if (!f) return;
+    const keep = () => { f.name = sfName.value; f.trigger = sfTrig.value; f.days = Number(sfDays.value) || 1; f.hour = sfHour.value; f.text = sfText.value; f.attach = sfAtt.value; f.active = sfOn.checked; };
+    const sfName = document.getElementById('sfName'), sfTrig = document.getElementById('sfTrig'), sfDays = document.getElementById('sfDays'), sfHour = document.getElementById('sfHour'), sfText = document.getElementById('sfText'), sfAtt = document.getElementById('sfAtt'), sfOn = document.getElementById('sfOn');
+    app.querySelectorAll('[data-sf]').forEach(b => b.onclick = () => { keep(); const a = f.filter[b.dataset.sf]; const i = a.indexOf(b.dataset.v); i >= 0 ? a.splice(i, 1) : a.push(b.dataset.v); const y = scrollY; renderSc(); scrollTo(0, y); });
+    document.getElementById('sfCancel').onclick = () => { state.scForm = null; renderSc(); };
+    document.getElementById('sfSave').onclick = async () => {
+      keep();
+      const ok = await doAct(f.id ? 'scSave' : 'scAdd', { id: f.id, name: f.name, trigger: f.trigger, days: f.days, hour: f.hour, text: f.text, attach: f.attach, active: f.active, filter: f.filter });
+      if (ok) { state.scForm = null; render(); }
+    };
+    const rs = document.getElementById('sfReset'); if (rs) rs.onclick = async () => { if (!confirm('文面・日数・対象を初期設定に戻しますか？')) return; if (await doAct('scReset', { id: f.id })) { state.scForm = null; render(); } };
+    const dl = document.getElementById('sfDel'); if (dl) dl.onclick = async () => { if (!confirm(`「${f.name}」を削除しますか？`)) return; if (await doAct('scDelete', { id: f.id })) { state.scForm = null; render(); } };
+  }
+
+  /* ---------- 分析（期間を指定して集計） ---------- */
+  const ymdLocal = d => { const t = new Date(d.getTime() + 9 * 3600e3); return t.toISOString().slice(0, 10); };
+  function periodOf(key) {
+    const now = new Date(); const today = ymdLocal(now);
+    const back = n => ymdLocal(new Date(now.getTime() - n * 864e5));
+    const t = new Date(now.getTime() + 9 * 3600e3); const y = t.getUTCFullYear(), m = t.getUTCMonth();
+    const first = (yy, mm) => new Date(Date.UTC(yy, mm, 1)).toISOString().slice(0, 10);
+    const last = (yy, mm) => new Date(Date.UTC(yy, mm + 1, 0)).toISOString().slice(0, 10);
+    return { d7: [back(6), today], d30: [back(29), today], month: [first(y, m), today], prev: [first(y, m - 1), last(y, m - 1)], d90: [back(89), today] }[key];
+  }
+  /* デモ用：サンプルの実績（実データが少ないときの見本）。期間に合わせて毎回同じ値になるよう日付から作る */
+  function sampleStats(from, to) {
+    const daily = [];
+    const names = [['配信', '検討中の人に新着求人'], ['配信', '持ち帰りに悩む人へコラム'], ['ステップ', '希望条件の登録をうながす'], ['ステップ', '悩みに合うコラムを届ける'], ['ステップ', 'しばらく見ていない人に新着求人'], ['個別', 'CA の個別送信']];
+    const acc = names.map(([kind, name]) => ({ key: name, kind, name, sent: 0, reacted: 0, replied: 0, viewed: 0, answered: 0, converted: 0 }));
+    for (let t = new Date(from + 'T00:00:00Z'); t.toISOString().slice(0, 10) <= to && daily.length < 400; t = new Date(t.getTime() + 864e5)) {
+      const k = t.toISOString().slice(0, 10); const seed = [...k].reduce((a, c) => (a * 31 + c.charCodeAt(0)) % 9973, 7);
+      const wd = t.getUTCDay();
+      const row = { date: k, sent: 0, reacted: 0, replied: 0, viewed: 0, answered: 0, converted: 0 };
+      acc.forEach((a, i) => {
+        const base = a.kind === '配信' ? ((seed + i * 7) % 9 === 0 ? 40 + seed % 25 : 0) : a.kind === 'ステップ' ? 3 + (seed + i) % 6 : 2 + (seed + i) % 4;
+        const n = wd === 0 ? Math.round(base * 0.4) : base;
+        const rr = [0.38, 0.29, 0.46, 0.31, 0.18, 0.55][i];
+        const r = Math.round(n * rr), rep2 = Math.round(n * rr * (a.kind === '個別' ? 0.7 : 0.25)), v = Math.round(n * rr * 0.8), an = a.name.indexOf('希望条件') >= 0 ? Math.round(n * 0.32) : Math.round(n * 0.03), cv = Math.round(n * rr * 0.12);
+        a.sent += n; a.reacted += n * rr; a.replied += n * rr * (a.kind === '個別' ? 0.7 : 0.25); a.viewed += n * rr * 0.8; a.answered += a.name.indexOf('希望条件') >= 0 ? n * 0.32 : n * 0.03; a.converted += n * rr * 0.12;
+        row.sent += n; row.reacted += r; row.replied += rep2; row.viewed += v; row.answered += an; row.converted += cv;
+      });
+      daily.push(row);
+    }
+    const rate = (o) => Object.assign(o, { reactRate: o.sent ? Math.round(o.reacted / o.sent * 1000) / 10 : null, replyRate: o.sent ? Math.round(o.replied / o.sent * 1000) / 10 : null, viewRate: o.sent ? Math.round(o.viewed / o.sent * 1000) / 10 : null, answerRate: o.sent ? Math.round(o.answered / o.sent * 1000) / 10 : null, convRate: o.sent ? Math.round(o.converted / o.sent * 1000) / 10 : null });
+    acc.forEach(a => ['reacted', 'replied', 'viewed', 'answered', 'converted'].forEach(k => { a[k] = Math.round(a[k]); }));
+    const total = rate(['sent', 'reacted', 'replied', 'viewed', 'answered', 'converted'].reduce((o, k) => (o[k] = acc.reduce((s2, a) => s2 + a[k], 0), o), {}));
+    total.people = Math.round(total.sent * 0.42);
+    return { from, to, total, daily: daily.map(rate), rows: acc.filter(a => a.sent).map(rate).sort((x, y) => y.sent - x.sent), sample: true };
+  }
+  async function loadStats() {
+    const st = state.st;
+    if (MOCK) { st.data = sampleStats(st.from, st.to); return; }
+    const j = await api('stats', { from: st.from, to: st.to });
+    st.data = j.stats;
+    st.real = j.stats;
+  }
+  function chartHtml(daily) {
+    const W = 760, H = 180, padL = 34, padB = 22, padT = 8;
+    const max = Math.max(4, ...daily.map(d => d.sent));
+    const nice = Math.ceil(max / 4) * 4;
+    const n = daily.length, bw = (W - padL) / n, barW = Math.max(2, Math.min(28, bw - 2));
+    const y = v => padT + (H - padT - padB) * (1 - v / nice);
+    let g = '';
+    for (let i = 0; i <= 4; i++) { const v = nice / 4 * i; g += `<line x1="${padL}" x2="${W}" y1="${y(v)}" y2="${y(v)}" stroke="var(--line)" stroke-width="1"/><text x="${padL - 6}" y="${y(v) + 4}" text-anchor="end" font-size="10" fill="var(--muted)">${v}</text>`; }
+    const every = Math.ceil(n / 10);
+    daily.forEach((d, i) => {
+      const x = padL + i * bw + (bw - barW) / 2, h = y(0) - y(d.sent);
+      if (d.sent) g += `<path d="M${x},${y(0)} v${-Math.max(0, h - 4)} q0,-4 4,-4 h${barW - 8 > 0 ? barW - 8 : 0} q4,0 4,4 v${Math.max(0, h - 4)} z" fill="var(--green)"/>`;
+      g += `<rect class="hit" data-i="${i}" x="${padL + i * bw}" y="${padT}" width="${bw}" height="${H - padT - padB}" fill="transparent"/>`;
+      if (i % every === 0) g += `<text x="${padL + i * bw + bw / 2}" y="${H - 6}" text-anchor="middle" font-size="10" fill="var(--muted)">${+d.date.slice(5, 7)}/${+d.date.slice(8)}</text>`;
+    });
+    return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="日別の送信数">${g}</svg>`;
+  }
+  function renderStats() {
+    const d = state.data;
+    if (!state.st) { const [f, t] = periodOf('d30'); state.st = { key: 'd30', from: f, to: t, data: null, useSample: d.mode === 'demo', loading: false }; }
+    const st = state.st;
+    if (!st.data && !st.loading) { st.loading = true; app.innerHTML = '<div class="spin"></div>'; loadStats().catch(e => toast(e.message)).finally(() => { st.loading = false; if (state.view === 'stats') renderStats(); }); return; }
+    if (st.loading) return;
+    const real = st.data && !st.data.sample ? st.data : null;
+    const showSample = d.mode === 'demo' && st.useSample;
+    const S = showSample ? sampleStats(st.from, st.to) : st.data;
+    const T = S.total;
+    const pct = v => v == null ? '—' : v + '%';
+    const presets = [['d7', '過去7日'], ['d30', '過去30日'], ['month', '今月'], ['prev', '先月'], ['d90', '過去90日']];
+    app.innerHTML = `
+      <div class="period" role="group" aria-label="集計期間">${presets.map(([k, l]) => `<button class="chip" data-p="${k}" aria-pressed="${st.key === k}">${l}</button>`).join('')}
+        <span style="margin-left:6px;font-size:12px;color:var(--muted)">期間</span><input type="date" id="pFrom" value="${st.from}" aria-label="開始日"><span>〜</span><input type="date" id="pTo" value="${st.to}" aria-label="終了日"><button class="mini" id="pGo">集計</button>
+        ${d.mode === 'demo' ? `<label style="margin-left:auto;font-size:12.5px;display:flex;gap:6px;align-items:center"><input type="checkbox" id="pSample" ${st.useSample ? 'checked' : ''}> サンプルの実績で見る</label>` : ''}</div>
+      ${showSample ? '<div class="samplenote">サンプルの実績を表示しています（実運用ではこう見える、という見本）。チェックを外すと、あなたが送った分の実際の数字になります。</div>' : ''}
+      <div class="skpi">
+        <div class="kpi"><span>送信数</span><b>${T.sent}</b><small>届いた人 ${T.people || 0}人</small></div>
+        <div class="kpi"><span>反応率</span><b>${pct(T.reactRate)}</b><small>48時間以内に何か操作</small></div>
+        <div class="kpi"><span>返信率</span><b>${pct(T.replyRate)}</b><small>48時間以内にトークで返信</small></div>
+        <div class="kpi"><span>閲覧率</span><b>${pct(T.viewRate)}</b><small>求人・コラムを開いた</small></div>
+        <div class="kpi"><span>回答率</span><b>${pct(T.answerRate)}</b><small>希望条件の質問に回答</small></div>
+        <div class="kpi"><span>相談・予約率</span><b>${pct(T.convRate)}</b><small>7日以内に相談・予約・書類完成</small></div>
+      </div>
+      <div class="chartbox"><h2>日別の送信数（${S.from.slice(5).replace('-', '/')}〜${S.to.slice(5).replace('-', '/')}）</h2><div class="chartscroll">${chartHtml(S.daily)}</div><div class="tip" id="tip" hidden></div></div>
+      <div class="tblwrap"><table class="st"><thead><tr><th>配信・ステップ配信</th><th>送信</th><th>反応率</th><th>返信率</th><th>閲覧率</th><th>回答率</th><th>相談・予約率</th></tr></thead><tbody>
+        ${S.rows.length ? S.rows.map(r => `<tr><td><span class="k">${esc(r.kind)}</span>${esc(r.name)}</td><td>${r.sent}</td><td>${pct(r.reactRate)}</td><td>${pct(r.replyRate)}</td><td>${pct(r.viewRate)}</td><td>${pct(r.answerRate)}</td><td>${pct(r.convRate)}</td></tr>`).join('') : '<tr><td colspan="7" style="text-align:center;color:var(--muted)">この期間に送ったメッセージはありません</td></tr>'}
+      </tbody></table></div>
+      <p class="fnote" style="margin-top:8px">LINE では一人ひとりの既読が取れないため、送ったあとの行動（操作・返信・閲覧・回答・相談）で効果を測っています。CSV で保存：<button class="mini" id="pCsv">ダウンロード</button></p>`;
+    app.querySelectorAll('[data-p]').forEach(b => b.onclick = () => { const [f, t] = periodOf(b.dataset.p); Object.assign(st, { key: b.dataset.p, from: f, to: t, data: null }); renderStats(); });
+    document.getElementById('pGo').onclick = () => { const f = document.getElementById('pFrom').value, t = document.getElementById('pTo').value; if (!f || !t) return toast('期間を指定してください'); Object.assign(st, { key: '', from: f <= t ? f : t, to: f <= t ? t : f, data: null }); renderStats(); };
+    const ps = document.getElementById('pSample'); if (ps) ps.onchange = () => { st.useSample = ps.checked; renderStats(); };
+    // ホバーで日ごとの内訳
+    const tip = document.getElementById('tip'), box = app.querySelector('.chartbox');
+    app.querySelectorAll('.hit').forEach(h => {
+      const show = () => { const dd = S.daily[+h.dataset.i]; const r = h.getBoundingClientRect(), b = box.getBoundingClientRect(); tip.hidden = false; tip.innerHTML = `${+dd.date.slice(5, 7)}/${+dd.date.slice(8)}　送信 ${dd.sent}<br>反応 ${dd.reacted}（${pct(dd.reactRate)}）・返信 ${dd.replied}`; tip.style.left = (r.left - b.left + r.width / 2) + 'px'; tip.style.top = (r.top - b.top + 10) + 'px'; };
+      h.addEventListener('mouseenter', show); h.addEventListener('click', show); h.addEventListener('mouseleave', () => { tip.hidden = true; });
+    });
+    document.getElementById('pCsv').onclick = () => {
+      const rows = [['日付', '送信', '反応', '返信', '閲覧', '回答', '相談・予約']].concat(S.daily.map(x => [x.date, x.sent, x.reacted, x.replied, x.viewed, x.answered, x.converted]))
+        .concat([[], ['配信名', '種類', '送信', '反応率', '返信率', '閲覧率', '回答率', '相談・予約率']]).concat(S.rows.map(r => [r.name, r.kind, r.sent, r.reactRate, r.replyRate, r.viewRate, r.answerRate, r.convRate]));
+      const csv = '﻿' + rows.map(r => r.map(v => `"${String(v == null ? '' : v).replace(/"/g, '""')}"`).join(',')).join('\r\n');
+      const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' })); a.download = `ondo_配信分析_${S.from}_${S.to}.csv`; a.click();
+    };
   }
 
   /* ---------- 対応：LINEで送る／対応を記録 ---------- */
