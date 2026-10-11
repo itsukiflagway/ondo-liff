@@ -195,6 +195,34 @@ table.st td .k{font-size:10.5px;color:var(--muted);border:1px solid var(--line);
 .tblwrap{overflow-x:auto;border-radius:14px}
 .samplenote{font-size:12px;background:#FFF1D2;color:#7A4E00;border-radius:10px;padding:8px 12px;margin-bottom:10px}
 @media (max-width:820px){.skpi{grid-template-columns:repeat(3,1fr)}.two{grid-template-columns:1fr}}
+.fs.deal{background:#FFF1D2}.fs.deal span{color:#8A5A00}
+.deal{border:1.5px solid var(--line);border-radius:12px;padding:10px 12px;margin-top:8px}
+.deal .dt{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.deal .dt b{font-size:14px;color:var(--ink)}
+.steps{display:flex;gap:3px;margin:8px 0 4px}
+.steps i{flex:1;height:6px;border-radius:3px;background:var(--line)}
+.steps i.on{background:var(--green)}
+.steps.end i.on{background:#B9B2A8}
+.steps.left i.on{background:#D9443A}
+.slabels{display:flex;justify-content:space-between;font-size:10px;color:var(--muted)}
+.deal .money{font-size:12.5px;color:var(--text);margin-top:4px}
+.deal .money b{color:var(--ink)}
+.st-end{background:var(--soft);color:var(--muted)}.st-won{background:#FFF1D2;color:#8A5A00}.st-left{background:#FBE7E5;color:#B3361F}
+.dform{border:1.5px solid var(--line);border-radius:12px;padding:12px;margin-top:8px;background:var(--soft)}
+.dform label{display:block;font-size:12px;font-weight:700;color:var(--muted);margin:8px 0 4px}
+.dform input,.dform select{width:100%;font:inherit;font-size:14px;border:1.5px solid var(--line);border-radius:8px;padding:7px 10px;background:#fff}
+.board{display:grid;grid-template-columns:repeat(6,minmax(150px,1fr));gap:8px;overflow-x:auto;padding-bottom:4px}
+.bcol{background:var(--soft);border-radius:12px;padding:8px;min-height:120px}
+.bcol h3{font-size:12px;margin:0 0 6px;color:var(--ink);display:flex;justify-content:space-between}
+.bcol h3 span{color:var(--muted);font-weight:500}
+.bcard{display:block;width:100%;text-align:left;background:#fff;border:1px solid var(--line);border-radius:10px;padding:8px;margin-bottom:6px;font-size:12px;cursor:pointer}
+.bcard b{display:block;font-size:13px;color:var(--ink)}
+.bcard span{color:var(--muted)}
+.retain{display:flex;flex-direction:column;gap:6px}
+.rt{display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:center;background:#fff;border:1px solid var(--line);border-radius:10px;padding:8px 12px;font-size:12.5px}
+.rt b{color:var(--ink)}
+.rt .left{font-weight:700;color:#B3361F;white-space:nowrap}
+@media (max-width:820px){.rt{grid-template-columns:1fr}}
 .foot{text-align:center;font-size:12px;color:var(--muted);margin:24px 0 10px}
 .foot a,.foot button{color:var(--green);background:none;border:0;cursor:pointer;text-decoration:underline;font-size:12px}
 .back{display:none}
@@ -262,6 +290,13 @@ button:focus-visible{outline:3px solid #F3B44B;outline-offset:2px}
   let mockData = null;
   async function mockApi(action, x) {
     if (!mockData) mockData = await fetch('./mock.json', { cache: 'no-cache' }).then(r => r.json());
+    if (/^deal/.test(action)) {
+      const now = new Date().toISOString(), ds = mockData.deals;
+      if (action === 'dealSave') { const j = (mockData.jobs || []).find(q => q.id === x.jobId) || {}; const fee = Math.round((+x.salary || 0) * 10000 * (+x.feeRate || 30) / 100); ds.push({ id: 'md' + Date.now(), candidateId: x.candidateId, candidateName: (mockData.people.find(p => p.id === x.candidateId) || {}).name || '', jobId: x.jobId, company: j.company || x.company, title: j.title || '', stage: '推薦', history: [{ stage: '推薦', at: now }], salary: +x.salary || 0, feeRate: +x.feeRate || 30, fee, joinDate: '', leftDate: '', refund: 0, net: fee, refundLimit: '', inRefundPeriod: false }); mockData.done = '推薦を記録しました（見た目確認用）'; }
+      if (action === 'dealStage') { const dd = ds.find(q => q.id === x.id); if (!dd || dd.sample) throw new Error('サンプルの案件は変更できません'); dd.stage = x.stage; dd.history.push({ stage: x.stage, at: now }); if (x.joinDate) { dd.joinDate = x.joinDate; dd.inRefundPeriod = true; dd.refundLimit = new Date(new Date(x.joinDate).getTime() + 90 * 864e5).toISOString().slice(0, 10); } if (x.leftDate) { dd.leftDate = x.leftDate; dd.refund = Math.round(dd.fee * 0.5); dd.inRefundPeriod = false; } mockData.done = `「${x.stage}」を記録しました（見た目確認用）`; }
+      if (action === 'dealDelete') { mockData.deals = ds.filter(q => q.id !== x.id); mockData.done = '削除しました'; }
+      return JSON.parse(JSON.stringify(mockData));
+    }
     if (/^(bc|sc)/.test(action)) {
       const bc = mockData.bc;
       if (action === 'bcCreate') { const n = mockData.people.filter(p => matchFilter(p, x.filter)).length; bc.broadcasts.unshift({ id: 'm' + Date.now(), name: x.name || '無題の配信', createdAt: new Date().toISOString(), timing: x.timing, sendAt: x.sendAt, status: x.timing === 'now' ? '送信済み' : '予約', targets: n, real: 0, sent: 0, waiting: 0, demo: n, attach: bc.attachments[x.message.attach], reaction: null }); mockData.done = `${n}人が対象（見た目確認用のため送信しません）`; }
@@ -293,11 +328,12 @@ button:focus-visible{outline:3px solid #F3B44B;outline-offset:2px}
     const nav = document.getElementById('views');
     nav.hidden = false;
     const v = state.view || 'people';
-    nav.innerHTML = [['people', '求職者'], ['bc', '配信'], ['sc', 'ステップ配信'], ['stats', '分析']].map(([k, l]) => `<button data-v="${k}" ${v === k ? 'aria-current="page"' : ''}>${l}</button>`).join('');
+    nav.innerHTML = [['people', '求職者'], ['bc', '配信'], ['sc', 'ステップ配信'], ['stats', '配信の分析'], ['sales', '成約・売上']].map(([k, l]) => `<button data-v="${k}" ${v === k ? 'aria-current="page"' : ''}>${l}</button>`).join('');
     nav.querySelectorAll('button').forEach(b => b.onclick = () => { state.view = b.dataset.v; render(); window.scrollTo(0, 0); });
     if (v === 'bc') return renderBc();
     if (v === 'sc') return renderSc();
     if (v === 'stats') return renderStats();
+    if (v === 'sales') return renderSales();
     renderPeople();
   }
 
@@ -319,9 +355,9 @@ button:focus-visible{outline:3px solid #F3B44B;outline-offset:2px}
         <div class="kpi"><span>面談予約</span><b>${ppl.filter(p => p.stage === '面談').length}<small>人</small></b></div>
         <div class="kpi"><span>友だち（${esc(d.template)}）</span><b>${ppl.length}<small>人</small></b></div>
       </div>
-      <section class="funnel" aria-label="LINE登録から面談予約までの人数"><h2>LINE登録 → 面談予約</h2><div class="fsteps">
-        ${f.map((s, i) => `<div class="fs"><span>${esc(s.label)}</span><b>${s.n}</b>${i ? `<i>${f[i - 1].n ? Math.round(s.n / f[i - 1].n * 100) : 0}%</i>` : ''}</div>`).join('')}
-        <div class="fs next"><span>成約・売上</span><b>CRM連携で表示予定</b></div>
+      <section class="funnel" aria-label="LINE登録から成約までの人数"><h2>LINE登録 → 成約</h2><div class="fsteps">
+        ${fullFunnel(d).map((s, i, f2) => { const base = s.label === '推薦' ? f2[0] : f2[i - 1]; const r = i && base && base.n ? Math.round(s.n / base.n * 100) + '%' : ''; return `<div class="fs ${s.deal ? 'deal' : ''}"><span>${esc(s.label)}</span><b>${s.n}</b>${i ? `<i>${s.label === '推薦' ? '友だちの' : ''}${r}</i>` : ''}</div>`; }).join('')}
+        <button class="fs next" id="toSales" style="text-align:left;border:0;cursor:pointer"><span>売上（今月）</span><b style="font-size:16px;color:var(--ink)">${yen(salesSum(d, monthRange(0)).net)}</b></button>
       </div></section>
       <div class="main">
         <section aria-label="求職者の一覧">
@@ -334,6 +370,7 @@ button:focus-visible{outline:3px solid #F3B44B;outline-offset:2px}
     const lo = document.getElementById('logout'); if (lo) lo.onclick = () => { store.set(''); ownerKey = ''; location.reload(); };
     const ol = document.getElementById('ownerLogin'); if (ol) ol.onclick = showLogin;
     app.querySelectorAll('.tab').forEach(b => b.onclick = () => { state.filter = b.dataset.f; render(); });
+    const ts = document.getElementById('toSales'); if (ts) ts.onclick = () => { state.view = 'sales'; render(); scrollTo(0, 0); };
     app.querySelectorAll('.row').forEach(b => b.onclick = () => { if (state.sel !== b.dataset.id) { state.act = ''; state.form = {}; } state.sel = b.dataset.id; render(); document.getElementById('detail').classList.add('open'); });
     renderDetail();
   }
@@ -362,6 +399,7 @@ button:focus-visible{outline:3px solid #F3B44B;outline-offset:2px}
           ${p.tags.length ? `<div class="tags">${p.tags.map(t => `<span class="tag">悩み：${esc(t)}</span>`).join('')}</div>` : ''}</div></div>
       ${actionsHtml(p)}
       <div class="sec"><h3>おすすめの声かけ</h3>${p.talk.map(t => `<div class="tk">${esc(t)}</div>`).join('')}</div>
+      ${dealsHtml(p)}
       <div class="sec"><h3>連絡のおすすめ時間</h3><div>${esc(p.callTime)}</div></div>
       ${p.booking ? `<div class="sec"><h3>面談</h3><div class="bk">${esc(p.booking.label)}（${esc(p.booking.method)}）${p.booking.ca ? `　担当：${esc(p.booking.ca)}` : ''}</div></div>` : ''}
       <div class="sec"><h3>温度感の内訳（4つの軸）</h3><div class="axes">
@@ -372,6 +410,7 @@ button:focus-visible{outline:3px solid #F3B44B;outline-offset:2px}
     const back = document.getElementById('back');
     back.onclick = () => el.classList.remove('open');
     bindActions(p);
+    bindDeals(p);
   }
 
   /* ---------- 配信 ---------- */
@@ -641,6 +680,132 @@ button:focus-visible{outline:3px solid #F3B44B;outline-offset:2px}
       const csv = '﻿' + rows.map(r => r.map(v => `"${String(v == null ? '' : v).replace(/"/g, '""')}"`).join(',')).join('\r\n');
       const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' })); a.download = `ondo_配信分析_${S.from}_${S.to}.csv`; a.click();
     };
+  }
+
+  /* ---------- 選考・成約 ---------- */
+  const yen = n => { n = Math.round(n || 0); return Math.abs(n) >= 10000 ? (Math.round(n / 1000) / 10).toLocaleString() + '万円' : n.toLocaleString() + '円'; };
+  const STAGES_D = () => state.data.dealStages || ['推薦', '書類選考', '面接設定', '面接実施', '内定', '内定承諾', '入職'];
+  function dealStatusCls(dl) { return dl.stage === '入職' ? 'st-won' : dl.stage === '早期退職' ? 'st-left' : ['辞退', '不合格'].indexOf(dl.stage) >= 0 ? 'st-end' : 'st-wait'; }
+  function dealsOf(p) { return (state.data.deals || []).filter(x => x.candidateId === p.id); }
+  function dealsHtml(p) {
+    const list = dealsOf(p), st = STAGES_D(), f = state.dealForm && state.dealForm.cid === p.id ? state.dealForm : null;
+    const reachIdx = dl => { if (st.indexOf(dl.stage) >= 0) return st.indexOf(dl.stage); const h = (dl.history || []).map(x => st.indexOf(x.stage)).filter(i => i >= 0); return h.length ? Math.max.apply(null, h) : 0; };
+    const card = dl => {
+      const idx = reachIdx(dl), ended = st.indexOf(dl.stage) < 0, next = !ended && idx < st.length - 1 ? st[idx + 1] : '';
+      const edit = state.dealEdit && state.dealEdit.id === dl.id ? state.dealEdit : null;
+      return `<div class="deal"><div class="dt"><b>${esc(dl.company)}</b><span class="st ${dealStatusCls(dl)}">${esc(dl.stage === '入職' ? '成約（入職）' : dl.stage)}</span>${dl.sample ? '<span class="pill p-stage">サンプル</span>' : ''}</div>
+        ${dl.title ? `<div class="fnote" style="margin:2px 0 0">${esc(dl.title)}</div>` : ''}
+        <div class="steps ${dl.stage === '早期退職' ? 'left' : ended ? 'end' : ''}" aria-hidden="true">${st.map((x, i) => `<i class="${i <= idx ? 'on' : ''}"></i>`).join('')}</div>
+        <div class="slabels"><span>推薦</span><span>面接</span><span>内定</span><span>入職</span></div>
+        <div class="money">${dl.fee ? `紹介手数料 <b>${yen(dl.fee)}</b>${dl.salary ? `（想定年収 ${dl.salary}万円 × ${dl.feeRate}%）` : ''}` : '手数料：未入力'}${dl.joinDate ? `｜入職 ${esc(dl.joinDate)}` : ''}${dl.refund ? `｜返金 <b style="color:#B3361F">${yen(dl.refund)}</b>（退職 ${esc(dl.leftDate)}）` : ''}${dl.inRefundPeriod ? `｜返金対象期間 〜${esc(dl.refundLimit)}` : ''}</div>
+        ${dl.sample ? '' : edit ? `<div class="dform">
+          ${edit.mode === 'join' ? `<label for="dJoin">入職日</label><input type="date" id="dJoin" value="${esc(edit.date || '')}">` : `<label for="dLeft">退職日</label><input type="date" id="dLeft" value="${esc(edit.date || '')}"><p class="fnote">返金規定（初期値）：入職から${(state.data.refundRules || []).map(r => `${r.days}日以内は${Math.round(r.rate * 100)}%`).join('、')}を返金</p>`}
+          <div class="frow"><button class="go" data-dok="${esc(dl.id)}">${edit.mode === 'join' ? '成約を記録' : '早期退職を記録'}</button><button class="mini" data-dcancel="1">やめる</button></div></div>`
+          : `<div class="frow" style="margin-top:6px">${next ? `<button class="mini" data-next="${esc(dl.id)}" data-stage="${esc(next)}">${next === '入職' ? '入職（成約）を記録' : esc(next) + 'へ進める'}</button><button class="mini" data-end="${esc(dl.id)}" data-stage="辞退">辞退</button><button class="mini" data-end="${esc(dl.id)}" data-stage="不合格">不合格</button>` : ''}${dl.stage === '入職' ? `<button class="mini" data-left="${esc(dl.id)}">早期退職を記録</button>` : ''}<button class="mini danger" data-ddel="${esc(dl.id)}" style="margin-left:auto">削除</button></div>`}
+      </div>`;
+    };
+    const jobs = state.data.jobs || [];
+    return `<div class="sec"><h3>選考・成約</h3>${list.length ? list.map(card).join('') : '<p class="fnote" style="margin:0">まだ選考はありません</p>'}
+      ${f ? `<div class="dform"><label for="dJob">応募先の求人</label><select id="dJob"><option value="">（求人にない会社を入力）</option>${jobs.map(j => `<option value="${esc(j.id)}" ${f.jobId === j.id ? 'selected' : ''}>${esc(j.company)}｜${esc(j.title)}</option>`).join('')}</select>
+        <div id="dFree" ${f.jobId ? 'hidden' : ''}><label for="dCo">会社・施設名</label><input type="text" id="dCo" maxlength="60" value="${esc(f.company || '')}"></div>
+        <div class="two"><div><label for="dSal">想定年収（万円）</label><input type="number" id="dSal" min="0" max="3000" value="${esc(f.salary || '')}"></div><div><label for="dRate">紹介手数料率（%）</label><input type="number" id="dRate" min="0" max="100" value="${esc(f.feeRate != null ? f.feeRate : state.data.feeRate)}"></div></div>
+        <p class="fnote" id="dFee"></p>
+        <div class="frow"><button class="go" id="dSave">推薦を記録</button><button class="mini" id="dCancel">やめる</button></div></div>`
+      : `<div class="frow" style="margin-top:8px"><button class="mini" id="dAdd">＋ 推薦（選考）を追加</button></div>`}</div>`;
+  }
+  function bindDeals(p) {
+    const q = id => document.getElementById(id);
+    const rerender = () => { const el = q('detail'); const y = el.scrollTop; renderDetail(); q('detail').scrollTop = y; };
+    const add = q('dAdd'); if (add) add.onclick = () => { state.dealForm = { cid: p.id, jobId: '', feeRate: state.data.feeRate }; rerender(); };
+    if (q('dSave')) {
+      const calc = () => { const sal = Number(q('dSal').value) || 0, rate = Number(q('dRate').value) || 0; q('dFee').textContent = sal ? `紹介手数料（想定）：${yen(sal * 10000 * rate / 100)}` : '想定年収を入れると、紹介手数料を自動で計算します'; };
+      q('dJob').onchange = () => { q('dFree').hidden = !!q('dJob').value; };
+      q('dSal').oninput = calc; q('dRate').oninput = calc; calc();
+      q('dCancel').onclick = () => { state.dealForm = null; rerender(); };
+      q('dSave').onclick = async () => { const ok = await doDeal('dealSave', { candidateId: p.id, jobId: q('dJob').value, company: q('dCo') ? q('dCo').value : '', salary: q('dSal').value, feeRate: q('dRate').value }); if (ok) state.dealForm = null; };
+    }
+    document.querySelectorAll('[data-next]').forEach(b => b.onclick = () => { if (b.dataset.stage === '入職') { state.dealEdit = { id: b.dataset.next, mode: 'join' }; rerender(); return; } doDeal('dealStage', { id: b.dataset.next, stage: b.dataset.stage }); });
+    document.querySelectorAll('[data-end]').forEach(b => b.onclick = () => { if (confirm(`「${b.dataset.stage}」で選考を終了しますか？`)) doDeal('dealStage', { id: b.dataset.end, stage: b.dataset.stage }); });
+    document.querySelectorAll('[data-left]').forEach(b => b.onclick = () => { state.dealEdit = { id: b.dataset.left, mode: 'left' }; rerender(); });
+    document.querySelectorAll('[data-dcancel]').forEach(b => b.onclick = () => { state.dealEdit = null; rerender(); });
+    document.querySelectorAll('[data-dok]').forEach(b => b.onclick = async () => {
+      const mode = state.dealEdit.mode, v = q(mode === 'join' ? 'dJoin' : 'dLeft').value;
+      if (!v) return toast(mode === 'join' ? '入職日を入れてください' : '退職日を入れてください');
+      if (await doDeal('dealStage', mode === 'join' ? { id: b.dataset.dok, stage: '入職', joinDate: v } : { id: b.dataset.dok, stage: '早期退職', leftDate: v })) state.dealEdit = null;
+    });
+    document.querySelectorAll('[data-ddel]').forEach(b => b.onclick = () => { if (confirm('この選考の記録を削除しますか？')) doDeal('dealDelete', { id: b.dataset.ddel }); });
+  }
+  async function doDeal(action, x) {
+    try { const j = await api(action, x); state.data = j; state.dealEdit = null; render(); if (state.view === 'people') document.getElementById('detail').classList.add('open'); toast(j.done || '保存しました'); return true; }
+    catch (e) { toast(e.message); return false; }
+  }
+
+  /* ---------- 成約・売上 ---------- */
+  function monthRange(back) { const t = new Date(Date.now() + 9 * 3600e3); const y = t.getUTCFullYear(), m = t.getUTCMonth() - back; return [new Date(Date.UTC(y, m, 1)).toISOString().slice(0, 10), new Date(Date.UTC(y, m + 1, 0)).toISOString().slice(0, 10)]; }
+  function salesSum(d, [from, to]) {
+    const deals = d.deals || [];
+    const won = deals.filter(x => x.joinDate && x.joinDate >= from && x.joinDate <= to && (x.stage === '入職' || x.stage === '早期退職'));
+    const refunds = deals.filter(x => x.leftDate && x.leftDate >= from && x.leftDate <= to && x.refund);
+    const gross = won.reduce((s2, x) => s2 + x.fee, 0), refund = refunds.reduce((s2, x) => s2 + x.refund, 0);
+    return { won, refunds, count: won.length, gross, refund, net: gross - refund, avg: won.length ? gross / won.length : 0 };
+  }
+  function fullFunnel(d) {
+    const f = d.funnel || [], ids = new Set(d.people.map(p => p.id));
+    const deals = (d.deals || []).filter(x => ids.has(x.candidateId));
+    const reached = (stage) => new Set(deals.filter(x => (x.history || []).some(h => h.stage === stage) || x.stage === stage).map(x => x.candidateId)).size;
+    return f.concat([{ label: '推薦', n: new Set(deals.map(x => x.candidateId)).size, deal: true }, { label: '内定', n: reached('内定'), deal: true }, { label: '成約（入職）', n: reached('入職'), deal: true }]);
+  }
+  function renderSales() {
+    const d = state.data, st = STAGES_D();
+    if (!state.sl) state.sl = { key: 'm0', range: monthRange(0) };
+    const S = salesSum(d, state.sl.range);
+    const deals = d.deals || [];
+    const yomi = deals.filter(x => x.stage === '内定承諾').reduce((s2, x) => s2 + x.fee, 0);
+    const months = Array.from({ length: 6 }, (_, i) => monthRange(5 - i));
+    const mvals = months.map(r => ({ label: +r[0].slice(5, 7) + '月', v: salesSum(d, r) }));
+    const max = Math.max(1, ...mvals.map(m => Math.max(m.v.gross, 1)));
+    const W = 960, H = 220, padL = 52, padB = 24, padT = 22, bw = (W - padL) / 6, top = max * 1.15, y = v => padT + (H - padT - padB) * (1 - v / top);
+    let g = '';
+    for (let i = 0; i <= 3; i++) { const v = top / 3 * i; g += `<line x1="${padL}" x2="${W}" y1="${y(v)}" y2="${y(v)}" stroke="var(--line)"/><text x="${padL - 6}" y="${y(v) + 4}" text-anchor="end" font-size="10" fill="var(--muted)">${Math.round(v / 10000)}万</text>`; }
+    mvals.forEach((m, i) => {
+      const x = padL + i * bw + bw * 0.22, w = bw * 0.56, h = y(0) - y(m.v.net);
+      if (m.v.net > 0) g += `<path d="M${x},${y(0)} v${-Math.max(0, h - 4)} q0,-4 4,-4 h${w - 8} q4,0 4,4 v${Math.max(0, h - 4)} z" fill="var(--green)"/>`;
+      g += `<text x="${x + w / 2}" y="${y(m.v.net) - 6}" text-anchor="middle" font-size="10.5" fill="var(--ink)" font-weight="700">${m.v.net ? Math.round(m.v.net / 10000) + '万' : ''}</text><text x="${x + w / 2}" y="${H - 6}" text-anchor="middle" font-size="10.5" fill="var(--muted)">${m.label}</text>`;
+      g += `<rect class="mh" data-i="${i}" x="${padL + i * bw}" y="${padT}" width="${bw}" height="${H - padT - padB}" fill="transparent"/>`;
+    });
+    const active = st.slice(0, -1);
+    const pd = id => d.people.find(p => p.id === id);
+    const retain = deals.filter(x => x.inRefundPeriod).sort((a, b) => a.refundLimit < b.refundLimit ? -1 : 1);
+    const today = new Date(Date.now() + 9 * 3600e3).toISOString().slice(0, 10);
+    const daysLeft = dt => Math.max(0, Math.round((new Date(dt) - new Date(today)) / 864e5));
+    const curRate = x => { const days = Math.round((new Date(today) - new Date(x.joinDate)) / 864e5); const r = (d.refundRules || []).find(q => days <= q.days); return r ? r.rate : 0; };
+    const presets = [['m0', '今月', monthRange(0)], ['m1', '先月', monthRange(1)], ['q', '過去3ヶ月', [monthRange(2)[0], monthRange(0)[1]]], ['h', '過去6ヶ月', [monthRange(5)[0], monthRange(0)[1]]]];
+    app.innerHTML = `
+      ${d.mode === 'demo' ? '<div class="intro"><b>LINE 登録から成約・売上まで</b>を、1人の求職者でつなげて管理できます。サンプルの案件は見本です。あなたやサンプルの求職者に選考を記録すると、ここに反映されます（デモの記録はあなたにしか見えません）。</div>' : ''}
+      <div class="period" role="group" aria-label="集計期間">${presets.map(([k, l]) => `<button class="chip" data-sp="${k}" aria-pressed="${state.sl.key === k}">${l}</button>`).join('')}
+        <span style="margin-left:6px;font-size:12px;color:var(--muted)">期間</span><input type="date" id="sFrom" value="${state.sl.range[0]}" aria-label="開始日"><span>〜</span><input type="date" id="sTo" value="${state.sl.range[1]}" aria-label="終了日"><button class="mini" id="sGo">集計</button></div>
+      <div class="skpi">
+        <div class="kpi"><span>成約（入職）</span><b>${S.count}<small style="display:inline">件</small></b><small>入職日で計上</small></div>
+        <div class="kpi"><span>売上（紹介手数料）</span><b>${yen(S.gross)}</b><small>入職月ベース</small></div>
+        <div class="kpi"><span>返金</span><b style="color:${S.refund ? '#B3361F' : 'var(--ink)'}">${yen(S.refund)}</b><small>早期退職の月で差し引き</small></div>
+        <div class="kpi"><span>純売上</span><b>${yen(S.net)}</b><small>売上 − 返金</small></div>
+        <div class="kpi"><span>平均単価</span><b>${yen(S.avg)}</b><small>1件あたり</small></div>
+        <div class="kpi"><span>ヨミ（内定承諾）</span><b>${yen(yomi)}</b><small>入職待ちの想定売上</small></div>
+      </div>
+      <div class="chartbox"><h2>月別の純売上（直近6か月）</h2><div class="chartscroll"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="月別の純売上">${g}</svg></div><div class="tip" id="tip2" hidden></div></div>
+      <div class="panel" style="margin-bottom:12px"><h2>選考中の案件</h2><p class="sub">カードを押すと、その求職者の詳細を開きます。</p>
+        <div class="board">${active.map(sg => { const cs = deals.filter(x => x.stage === sg); return `<div class="bcol"><h3>${esc(sg)}<span>${cs.length}件</span></h3>${cs.map(x => `<button class="bcard" data-open="${esc(x.candidateId)}"><b>${esc((pd(x.candidateId) || {}).self ? 'あなた' : x.candidateName.replace('（サンプル）', ''))}</b><span>${esc(x.company)}</span><br><span>${x.fee ? yen(x.fee) : '手数料未入力'}</span></button>`).join('')}</div>`; }).join('')}</div></div>
+      <div class="panel" style="margin-bottom:12px"><h2>定着フォロー（返金の対象期間中）</h2><p class="sub">入職から${d.refundDays || 90}日以内に辞めると返金になる人です。入職直後の声かけで早期退職を防ぎます。</p>
+        <div class="retain">${retain.length ? retain.map(x => `<div class="rt"><span><b>${esc(x.candidateName.replace('（サンプル）', ''))}</b>｜${esc(x.company)}｜入職 ${esc(x.joinDate)}</span><span>いま辞めた場合の返金 <b>${yen(x.fee * curRate(x))}</b></span><span class="left">あと${daysLeft(x.refundLimit)}日</span></div>`).join('') : '<p class="fnote">返金の対象期間中の人はいません</p>'}</div></div>
+      <div class="tblwrap"><table class="st"><thead><tr><th>成約・返金（この期間）</th><th>応募先</th><th>入職日</th><th>紹介手数料</th><th>返金</th></tr></thead><tbody>
+        ${S.won.concat(S.refunds.filter(x => S.won.indexOf(x) < 0)).map(x => `<tr><td>${esc(x.candidateName)}</td><td style="text-align:left">${esc(x.company)}</td><td>${esc(x.joinDate)}</td><td>${S.won.indexOf(x) >= 0 ? yen(x.fee) : '—'}</td><td>${x.refund && x.leftDate >= state.sl.range[0] && x.leftDate <= state.sl.range[1] ? yen(x.refund) : '—'}</td></tr>`).join('') || '<tr><td colspan="5" style="text-align:center;color:var(--muted)">この期間の成約・返金はありません</td></tr>'}
+      </tbody></table></div>
+      <p class="fnote" style="margin-top:8px">紹介手数料率の初期値は${d.feeRate}%（スクリプト プロパティ FEE_RATE で変更）。返金規定の初期値：${(d.refundRules || []).map(r => `入職から${r.days}日以内の退職は${Math.round(r.rate * 100)}%`).join('、')}。契約に合わせて変更できます。</p>`;
+    app.querySelectorAll('[data-sp]').forEach(b => b.onclick = () => { const pr = presets.find(x => x[0] === b.dataset.sp); state.sl = { key: pr[0], range: pr[2] }; renderSales(); });
+    document.getElementById('sGo').onclick = () => { const a = document.getElementById('sFrom').value, b2 = document.getElementById('sTo').value; if (!a || !b2) return toast('期間を指定してください'); state.sl = { key: '', range: a <= b2 ? [a, b2] : [b2, a] }; renderSales(); };
+    app.querySelectorAll('[data-open]').forEach(b => b.onclick = () => { const id = b.dataset.open; if (!d.people.find(p => p.id === id)) return toast('過去の案件のため、求職者の詳細はありません'); state.view = 'people'; state.filter = 'all'; state.sel = id; render(); document.getElementById('detail').classList.add('open'); scrollTo(0, 0); });
+    const tip = document.getElementById('tip2'), box = tip.parentElement;
+    app.querySelectorAll('.mh').forEach(h => { const show = () => { const m = mvals[+h.dataset.i]; const r = h.getBoundingClientRect(), b = box.getBoundingClientRect(); tip.hidden = false; tip.innerHTML = `${m.label}　成約 ${m.v.count}件<br>売上 ${yen(m.v.gross)}・返金 ${yen(m.v.refund)}`; tip.style.left = (r.left - b.left + r.width / 2) + 'px'; tip.style.top = (r.top - b.top + 20) + 'px'; }; h.addEventListener('mouseenter', show); h.addEventListener('click', show); h.addEventListener('mouseleave', () => { tip.hidden = true; }); });
   }
 
   /* ---------- 対応：LINEで送る／対応を記録 ---------- */
