@@ -239,6 +239,54 @@ button:focus-visible{outline:3px solid #F3B44B;outline-offset:2px}
   .detail.open{transform:none}
   .back{display:flex;position:sticky;top:0;background:var(--card);margin:0 -18px 10px;padding:12px 18px;border-bottom:1px solid var(--line);gap:6px;align-items:center;font-weight:700;color:var(--green);border:0;width:calc(100% + 36px);cursor:pointer;z-index:2}
 }
+
+/* LINEのトーク（CA画面から返信して、やり取りを1か所に残す） */
+.chat{border:1px solid var(--line);border-radius:12px;background:#EEF3F1;margin-top:14px;overflow:hidden}
+.chat .ch{display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--card);border-bottom:1px solid var(--line);font-size:12px;color:var(--muted)}
+.chat .ch b{color:var(--ink);font-size:13.5px}
+.chat .ch .sp{flex:1}
+.msgs{max-height:340px;overflow-y:auto;padding:10px 12px 12px;display:flex;flex-direction:column;gap:6px;overscroll-behavior:contain}
+.dsep{align-self:center;font-size:11px;color:var(--muted);background:rgba(255,255,255,.7);border-radius:999px;padding:0 10px;margin:4px 0}
+.m{max-width:82%;padding:7px 11px;border-radius:14px;font-size:13.5px;line-height:1.6;white-space:pre-wrap;word-break:break-word}
+.m time{display:block;font-size:10.5px;color:var(--muted);margin-top:1px}
+.m.seeker{align-self:flex-start;background:#fff;border:1px solid var(--line);border-top-left-radius:4px;color:var(--ink)}
+.m.seeker.new{border-color:var(--hot);box-shadow:0 0 0 1px var(--hot)}
+.m.ca{align-self:flex-end;background:#BFEBB5;border-top-right-radius:4px;color:#17331B}
+.m.ca time{text-align:right;color:#4C6B4F}
+.m.auto{align-self:flex-start;background:transparent;border:1px dashed #C9D3CF;color:var(--muted);font-size:12px}
+.m.sys{align-self:center;max-width:95%;background:transparent;color:var(--muted);font-size:11.5px;padding:0;text-align:center}
+.m.sys time{display:inline;margin-left:6px}
+.compose{border-top:1px solid var(--line);background:var(--card);padding:8px 10px 10px}
+.compose textarea{width:100%;font:inherit;font-size:14px;border:1.5px solid var(--line);border-radius:10px;padding:8px 10px;min-height:62px;resize:vertical;line-height:1.6;margin-top:6px;color:var(--text)}
+.compose .frow{margin-top:6px}
+.compose .fnote{margin:0;flex:1}
+.chips.small .chip{padding:2px 10px;font-size:12px}
+.p-unread{background:var(--hot);color:#fff;font-weight:700}
+.p-block{background:#4A4F4D;color:#fff}
+.p-id{background:var(--soft);color:var(--muted);border:1px solid var(--line)}
+/* 紐付け */
+.crm{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;margin-top:10px;font-size:12.5px;background:var(--green-soft);border-radius:10px;padding:8px 12px;color:var(--ink)}
+.crm.off{background:var(--soft);color:var(--muted)}
+.crm .sp{flex:1}
+.crm input{font:inherit;font-size:13px;border:1.5px solid var(--line);border-radius:8px;padding:4px 8px;width:11em;background:#fff}
+.crm button,.lnk{border:1.5px solid var(--line);background:#fff;border-radius:8px;padding:3px 10px;font-size:12px;font-weight:700;cursor:pointer;color:var(--ink)}
+.lkres{margin-top:12px;border:1.5px solid var(--green);border-radius:12px;padding:12px;background:#fff}
+.lkres .url{display:flex;gap:6px;margin:6px 0}
+.lkres .url input{flex:1;min-width:0;font:inherit;font-size:12.5px;border:1.5px solid var(--line);border-radius:8px;padding:6px 8px;background:var(--soft)}
+.lkres textarea{width:100%;font:inherit;font-size:13px;border:1.5px solid var(--line);border-radius:8px;padding:8px 10px;min-height:120px;line-height:1.7;background:var(--soft)}
+.lkres .qrw{display:flex;gap:12px;align-items:center;margin-top:10px;font-size:12px;color:var(--muted)}
+.lkres .qr{width:112px;height:112px;flex:0 0 112px;background:#fff;border:1px solid var(--line);border-radius:8px;padding:6px}
+.lkres .qr img,.lkres .qr canvas{width:100%!important;height:100%!important}
+.howto{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-bottom:14px}
+.howto div{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:12.5px}
+.howto b{display:block;color:var(--ink);font-size:13px}
+.howto i{font-style:normal;font-weight:700;color:var(--green);font-size:16px;margin-right:4px}
+.lk-ok{color:var(--green);font-weight:700}.lk-wait{color:#9A6B00;font-weight:700}.lk-ng{color:var(--muted)}
+.lktbl td:first-child small{display:block;font-size:11.5px;color:var(--muted)}
+.lktbl .lnkt{border:0;background:none;padding:0;color:var(--green);font-size:11.5px;text-decoration:underline;cursor:pointer}
+.cfg{font-size:12.5px;display:grid;grid-template-columns:auto 1fr;gap:4px 12px;margin-top:6px}
+.cfg dt{color:var(--muted)}.cfg dd{margin:0;color:var(--ink)}
+@media (max-width:760px){.howto{grid-template-columns:repeat(2,minmax(0,1fr))}}
 </style>
 </head>
 <body>
@@ -308,8 +356,23 @@ button:focus-visible{outline:3px solid #F3B44B;outline-offset:2px}
       if (action === 'bcCancel') { bc.broadcasts.find(q => q.id === x.id).status = '取消'; mockData.done = '取り消しました'; }
       return JSON.parse(JSON.stringify(mockData));
     }
+    if (/^(link|unlink)/.test(action)) {
+      const L = mockData.link, now = new Date().toISOString();
+      const mk = r => { const token = Math.random().toString(16).slice(2).padEnd(32, '0').slice(0, 32); L.links.unshift({ token, crmId: r.crmId, name: r.name || '', source: r.source || '', memo: '', createdAt: now, usedAt: '', expiresAt: new Date(Date.now() + 30 * 864e5).toISOString(), userId: '', status: '未使用', url: `https://liff.line.me/${cfg.liffId}/link/?t=${token}` }); L.counts.issued++; L.counts.waiting++; return token; };
+      const out = () => JSON.parse(JSON.stringify(mockData));
+      if (action === 'linkCreate') { const o = out(); o.token = mk(x); o.done = '専用リンクを発行しました（見た目確認用）'; return Object.assign(out(), { token: o.token, done: o.done }); }
+      if (action === 'linkBulk') { const tokens = x.rows.slice(0, 5).map(mk); return Object.assign(out(), { tokens, done: `${tokens.length}件のリンクを発行しました（見た目確認用）` }); }
+      if (action === 'linkCancel') { const l = L.links.find(q => q.token === x.token); l.status = '取消'; L.counts.waiting--; return Object.assign(out(), { done: 'リンクを取り消しました' }); }
+      const p = mockData.people.find(q => q.id === x.targetId);
+      if (!p.realLine) throw new Error('サンプルの求職者は変更できません');
+      if (action === 'linkManual') { Object.assign(p, { crmId: x.crmId, source: '', linkedAt: now }); L.counts.friendsLinked++; return Object.assign(out(), { done: `ID「${x.crmId}」と紐付けました` }); }
+      Object.assign(p, { crmId: '', source: '', linkedAt: '' }); L.counts.friendsLinked--; return Object.assign(out(), { done: '紐付けを解除しました' });
+    }
     if (action === 'log' || action === 'send') {
       const p = mockData.people.find(q => q.id === x.targetId);
+      p.chat = p.chat || [];
+      p.chat.push(action === 'send' ? { t: new Date().toISOString(), who: 'ca', text: x.text } : { t: new Date().toISOString(), who: 'sys', text: `CA：${x.type}${x.result ? '（' + x.result + '）' : ''}${x.memo ? '｜' + x.memo : ''}` });
+      p.unread = 0; if (p.talk && /返信を待って/.test(p.talk[0] || '')) p.talk.shift();
       const type = action === 'send' ? 'LINE送信' : x.type;
       const memo = x.memo || x.text || '';
       p.timeline.unshift({ t: new Date().toISOString(), label: `CA：${type}${x.result ? '（' + x.result + '）' : action === 'send' ? '（返信待ち）' : ''}${memo ? '｜' + memo.slice(0, 40) : ''}`, icon: 'ca', ca: true });
@@ -328,12 +391,13 @@ button:focus-visible{outline:3px solid #F3B44B;outline-offset:2px}
     const nav = document.getElementById('views');
     nav.hidden = false;
     const v = state.view || 'people';
-    nav.innerHTML = [['people', '求職者'], ['bc', '配信'], ['sc', 'ステップ配信'], ['stats', '配信の分析'], ['sales', '成約・売上']].map(([k, l]) => `<button data-v="${k}" ${v === k ? 'aria-current="page"' : ''}>${l}</button>`).join('');
+    nav.innerHTML = [['people', '求職者'], ['link', '紐付け'], ['bc', '配信'], ['sc', 'ステップ配信'], ['stats', '配信の分析'], ['sales', '成約・売上']].map(([k, l]) => `<button data-v="${k}" ${v === k ? 'aria-current="page"' : ''}>${l}</button>`).join('');
     nav.querySelectorAll('button').forEach(b => b.onclick = () => { state.view = b.dataset.v; render(); window.scrollTo(0, 0); });
     if (v === 'bc') return renderBc();
     if (v === 'sc') return renderSc();
     if (v === 'stats') return renderStats();
     if (v === 'sales') return renderSales();
+    if (v === 'link') return renderLink();
     renderPeople();
   }
 
@@ -345,7 +409,8 @@ button:focus-visible{outline:3px solid #F3B44B;outline-offset:2px}
     document.getElementById('mode').textContent = d.mode === 'owner' ? '運用' : 'デモ';
     document.getElementById('upd').textContent = `${abs(d.generatedAt)} 時点`;
     const f = d.funnel;
-    const list = state.filter === 'alert' ? alerts : ppl;
+    const unreadP = ppl.filter(p => p.unread > 0 && !p.blocked);
+    const list = state.filter === 'alert' ? alerts : state.filter === 'unread' ? unreadP : ppl;
     const self = ppl.find(p => p.self);
     app.innerHTML = `
       ${d.mode === 'demo' ? `<div class="intro"><b>${self ? 'あなたがLINEで操作した内容が、CAにはこう見えます。' : ''}</b>${self ? '（いちばん上の「あなた」）' : ''} ほかの人は架空のサンプルです。温度感は行動ごとの点数を時間とともに減らして計算し、上がった瞬間に「今すぐ連絡」に入ります。</div>` : ''}
@@ -361,8 +426,8 @@ button:focus-visible{outline:3px solid #F3B44B;outline-offset:2px}
       </div></section>
       <div class="main">
         <section aria-label="求職者の一覧">
-          <div class="tabs"><button class="tab" data-f="alert" aria-pressed="${state.filter === 'alert'}">今すぐ連絡（${alerts.length}）</button><button class="tab" data-f="all" aria-pressed="${state.filter === 'all'}">すべて（${ppl.length}）</button></div>
-          <div class="list">${list.length ? list.map(rowHtml).join('') : '<p class="empty">いま連絡が必要な人はいません</p>'}</div>
+          <div class="tabs"><button class="tab" data-f="alert" aria-pressed="${state.filter === 'alert'}">今すぐ連絡（${alerts.length}）</button><button class="tab" data-f="unread" aria-pressed="${state.filter === 'unread'}">未返信（${unreadP.length}）</button><button class="tab" data-f="all" aria-pressed="${state.filter === 'all'}">すべて（${ppl.length}）</button></div>
+          <div class="list">${list.length ? list.map(rowHtml).join('') : `<p class="empty">${state.filter === 'unread' ? '返信を待っているメッセージはありません' : 'いま連絡が必要な人はいません'}</p>`}</div>
         </section>
         <aside class="detail" id="detail" aria-label="求職者の詳細"></aside>
       </div>
@@ -371,18 +436,19 @@ button:focus-visible{outline:3px solid #F3B44B;outline-offset:2px}
     const ol = document.getElementById('ownerLogin'); if (ol) ol.onclick = showLogin;
     app.querySelectorAll('.tab').forEach(b => b.onclick = () => { state.filter = b.dataset.f; render(); });
     const ts = document.getElementById('toSales'); if (ts) ts.onclick = () => { state.view = 'sales'; render(); scrollTo(0, 0); };
-    app.querySelectorAll('.row').forEach(b => b.onclick = () => { if (state.sel !== b.dataset.id) { state.act = ''; state.form = {}; } state.sel = b.dataset.id; render(); document.getElementById('detail').classList.add('open'); });
+    app.querySelectorAll('.row').forEach(bindRow);
     renderDetail();
   }
 
+  function bindRow(b) { b.onclick = () => { if (state.sel !== b.dataset.id) { state.act = ''; state.form = {}; } state.sel = b.dataset.id; render(); document.getElementById('detail').classList.add('open'); scrollChat(); }; }
   function rowHtml(p) {
     return `<button class="row ${p.self ? 'self' : ''}" data-id="${esc(p.id)}" aria-pressed="${state.sel === p.id}">
       <span class="temp t-${p.bandKey}"><b>${p.score}</b><span>${esc(p.band)}</span></span>
       <span>
-        <span class="rh"><b>${esc(p.self ? 'あなた（' + p.name + '）' : p.name)}</b>${p.alert ? '<span class="pill p-bell">今すぐ</span>' : ''}<span class="pill p-stage">${esc(p.stage)}</span>${p.nextDate ? `<span class="pill p-due">次回連絡 ${esc(p.nextDate.slice(5).replace('-', '/'))}</span>` : ''}${p.gain48 > 0 ? `<span class="p-up">▲${p.gain48}（48時間）</span>` : ''}</span>
+        <span class="rh"><b>${esc(p.self ? 'あなた（' + p.name + '）' : p.name)}</b>${p.unread && !p.blocked ? `<span class="pill p-unread">未返信 ${p.unread}</span>` : p.alert ? '<span class="pill p-bell">今すぐ</span>' : ''}${p.blocked ? '<span class="pill p-block">ブロック中</span>' : ''}<span class="pill p-stage">${esc(p.stage)}</span>${p.nextDate ? `<span class="pill p-due">次回連絡 ${esc(p.nextDate.slice(5).replace('-', '/'))}</span>` : ''}${p.gain48 > 0 ? `<span class="p-up">▲${p.gain48}（48時間）</span>` : ''}</span>
         ${p.tags.length ? `<span class="tags">${p.tags.map(t => `<span class="tag">${esc(t)}</span>`).join('')}</span>` : ''}
         <span class="talk">${esc(p.talk[0] || '')}</span>
-        <span class="meta"><span>最後の行動：${rel(p.lastAt)}</span><span>連絡のおすすめ：${esc(p.callTime)}</span>${p.lastCa ? `<span>CA対応：${esc(p.lastCa.type)}${p.lastCa.result ? '（' + esc(p.lastCa.result) + '）' : ''} ${rel(p.lastCa.t)}</span>` : '<span>CA対応：まだなし</span>'}</span>
+        <span class="meta">${p.crmId ? `<span class="pill p-id">ID ${esc(p.crmId)}</span>` : ''}<span>最後の行動：${rel(p.lastAt)}</span><span>連絡のおすすめ：${esc(p.callTime)}</span>${p.lastCa ? `<span>CA対応：${esc(p.lastCa.type)}${p.lastCa.result ? '（' + esc(p.lastCa.result) + '）' : ''} ${rel(p.lastCa.t)}</span>` : '<span>CA対応：まだなし</span>'}</span>
       </span></button>`;
   }
 
@@ -397,6 +463,8 @@ button:focus-visible{outline:3px solid #F3B44B;outline-offset:2px}
         <div><h2>${esc(p.self ? 'あなた（' + p.name + '）' : p.name)}</h2>
           <div class="rh" style="margin-top:4px"><span class="pill p-stage">ステージ：${esc(p.stage)}</span>${p.gain48 > 0 ? `<span class="p-up">▲${p.gain48}（48時間）</span>` : ''}</div>
           ${p.tags.length ? `<div class="tags">${p.tags.map(t => `<span class="tag">悩み：${esc(t)}</span>`).join('')}</div>` : ''}</div></div>
+      ${crmHtml(p)}
+      ${chatHtml(p)}
       ${actionsHtml(p)}
       <div class="sec"><h3>おすすめの声かけ</h3>${p.talk.map(t => `<div class="tk">${esc(t)}</div>`).join('')}</div>
       ${dealsHtml(p)}
@@ -410,6 +478,7 @@ button:focus-visible{outline:3px solid #F3B44B;outline-offset:2px}
     const back = document.getElementById('back');
     back.onclick = () => el.classList.remove('open');
     bindActions(p);
+    bindCrm(p);
     bindDeals(p);
   }
 
@@ -808,7 +877,7 @@ button:focus-visible{outline:3px solid #F3B44B;outline-offset:2px}
     app.querySelectorAll('.mh').forEach(h => { const show = () => { const m = mvals[+h.dataset.i]; const r = h.getBoundingClientRect(), b = box.getBoundingClientRect(); tip.hidden = false; tip.innerHTML = `${m.label}　成約 ${m.v.count}件<br>売上 ${yen(m.v.gross)}・返金 ${yen(m.v.refund)}`; tip.style.left = (r.left - b.left + r.width / 2) + 'px'; tip.style.top = (r.top - b.top + 20) + 'px'; }; h.addEventListener('mouseenter', show); h.addEventListener('click', show); h.addEventListener('mouseleave', () => { tip.hidden = true; }); });
   }
 
-  /* ---------- 対応：LINEで送る／対応を記録 ---------- */
+  /* ---------- LINEのトーク・対応の記録 ---------- */
   const templates = p => {
     const n = p.self ? 'あなた' : p.name.replace('（サンプル）', '') + 'さん';
     const brand = state.data.brand || '';
@@ -819,22 +888,42 @@ button:focus-visible{outline:3px solid #F3B44B;outline-offset:2px}
       '書類の添削': `${n}、書類の作成おつかれさまでした。内容を拝見しました。\n自己PRをもう少し具体的にすると、さらに伝わりやすくなります。詳しくご説明しますね。`
     };
   };
+  const sendNote = p => p.realLine ? (state.data.mode === 'owner' ? '公式アカウントから届きます（メッセージ通数にカウント）' : `あなたのLINEに届きます（デモは1日${state.data.sendLimit}通まで）`) : 'サンプルなので送信はせず、記録だけ残ります';
+  function msgsHtml(p) {
+    const items = p.chat || [];
+    if (!items.length) return '<p class="empty" style="padding:16px">まだやり取りはありません</p>';
+    const lastCa = p.lastCa ? new Date(p.lastCa.t).getTime() : 0;
+    let day = '';
+    return items.map(c => {
+      const a = abs(c.t), d = a.split(' ')[0], tm = a.split(' ')[1];
+      const sep = d !== day ? `<div class="dsep">${d}</div>` : ''; day = d;
+      const cls = c.who === 'seeker' && new Date(c.t).getTime() > lastCa ? 'seeker new' : c.who;
+      const who = c.who === 'auto' ? '<small>メニュー・ページからの自動送信　</small>' : '';
+      return `${sep}<div class="m ${cls}">${who}${esc(c.text)}<time>${tm}</time></div>`;
+    }).join('');
+  }
+  function chatHtml(p) {
+    const f = state.form;
+    const tp = templates(p);
+    return `<section class="chat" aria-label="LINEのトーク">
+      <div class="ch"><b>LINEのトーク</b>${p.unread && !p.blocked ? `<span class="pill p-unread">未返信 ${p.unread}</span>` : ''}<span class="sp"></span><span id="live">${MOCK ? '' : '20秒ごとに自動更新'}</span></div>
+      <div class="msgs" id="msgs" tabindex="0" aria-label="やり取り">${msgsHtml(p)}</div>
+      ${p.blocked ? '<div class="compose"><p class="fnote">この人は公式アカウントをブロックしているため、送れません。</p></div>' : `<div class="compose">
+        <div class="chips small" aria-label="ひな形">${Object.keys(tp).map(k => `<button class="chip" data-tpl="${esc(k)}">${esc(k)}</button>`).join('')}</div>
+        <textarea id="fText" maxlength="500" placeholder="メッセージを入力（Ctrl＋Enter で送信）" aria-label="メッセージ">${esc(f.text || '')}</textarea>
+        <div class="frow"><span class="fnote">${sendNote(p)}</span><button class="go line" id="doSend" ${state.busy ? 'disabled' : ''}>${state.busy ? '送信中…' : '送信'}</button></div></div>`}
+    </section>
+    <p class="fnote">LINE公式アカウントのチャット画面から送った返信は、LINEの仕様でここに残りません。返信はこの欄から送ると、対応の記録と分析にも残ります。</p>`;
+  }
+  function scrollChat() { const m = document.getElementById('msgs'); if (m) m.scrollTop = m.scrollHeight; }
   function actionsHtml(p) {
     const f = state.form;
     const types = state.data.logTypes || [];
-    const sendNote = p.realLine ? (state.data.mode === 'owner' ? `${esc(p.name)}さんのLINEに、公式アカウントから届きます（メッセージ通数にカウントされます）` : `あなたのLINEに届きます（デモは1日${state.data.sendLimit}通まで）`) : 'サンプルの求職者なので実際には送られず、対応履歴にだけ記録されます';
     const results = (types.find(t => t.type === f.type) || { results: [] }).results;
     return `<div class="acts" role="group" aria-label="対応">
-        <button class="abtn line ${state.act === 'send' ? 'on' : ''}" id="aSend" aria-expanded="${state.act === 'send'}">LINEで送る</button>
-        <button class="abtn ${state.act === 'log' ? 'on' : ''}" id="aLog" aria-expanded="${state.act === 'log'}">対応を記録</button></div>
-      ${state.act === 'send' ? `<div class="form">
-        <label>ひな形</label><div class="chips">${Object.keys(templates(p)).map(k => `<button class="chip" data-tpl="${esc(k)}">${esc(k)}</button>`).join('')}</div>
-        <label for="fText">メッセージ</label><textarea id="fText" maxlength="500" placeholder="メッセージを入力">${esc(f.text || '')}</textarea>
-        <label for="fNextS">次回連絡日（任意）</label><input type="date" id="fNextS" value="${esc(f.nextDate || '')}">
-        <p class="fnote">${sendNote}</p>
-        <div class="frow"><button class="go line" id="doSend" ${state.busy ? 'disabled' : ''}>${state.busy ? '送信しています…' : '送信する'}</button></div></div>` : ''}
+        <button class="abtn ${state.act === 'log' ? 'on' : ''}" id="aLog" aria-expanded="${state.act === 'log'}">電話・面談などの対応を記録</button></div>
       ${state.act === 'log' ? `<div class="form">
-        <label>対応の種類</label><div class="chips">${types.map(t => `<button class="chip" data-type="${esc(t.type)}" aria-pressed="${f.type === t.type}">${esc(t.type)}</button>`).join('')}</div>
+        <label>対応の種類</label><div class="chips">${types.filter(t => t.type !== 'LINE送信').map(t => `<button class="chip" data-type="${esc(t.type)}" aria-pressed="${f.type === t.type}">${esc(t.type)}</button>`).join('')}</div>
         ${results.length ? `<label>結果</label><div class="chips">${results.map(r => `<button class="chip" data-res="${esc(r)}" aria-pressed="${f.result === r}">${esc(r)}</button>`).join('')}</div>` : ''}
         <label for="fMemo">メモ（任意）</label><textarea id="fMemo" maxlength="500" placeholder="例：持ち帰りなしの園を2件提案。来週返事をもらう">${esc(f.memo || '')}</textarea>
         <label for="fNext">次回連絡日（任意）</label><input type="date" id="fNext" value="${esc(f.nextDate || '')}">
@@ -844,28 +933,153 @@ button:focus-visible{outline:3px solid #F3B44B;outline-offset:2px}
   function bindActions(p) {
     const f = state.form;
     const keep = () => {
-      const t = document.getElementById('fText'), m = document.getElementById('fMemo'), n = document.getElementById('fNext') || document.getElementById('fNextS');
+      const t = document.getElementById('fText'), m = document.getElementById('fMemo'), n = document.getElementById('fNext');
       if (t) f.text = t.value; if (m) f.memo = m.value; if (n) f.nextDate = n.value;
     };
-    const rerender = () => { keep(); const y = document.getElementById('detail').scrollTop; renderDetail(); document.getElementById('detail').scrollTop = y; };
-    document.getElementById('aSend').onclick = () => { keep(); state.act = state.act === 'send' ? '' : 'send'; rerender(); };
+    const rerender = () => { keep(); const y = document.getElementById('detail').scrollTop; renderDetail(); document.getElementById('detail').scrollTop = y; scrollChat(); };
     document.getElementById('aLog').onclick = () => { keep(); state.act = state.act === 'log' ? '' : 'log'; rerender(); };
-    document.querySelectorAll('[data-tpl]').forEach(b => b.onclick = () => { f.text = templates(p)[b.dataset.tpl]; document.getElementById('fText').value = f.text; });
+    document.querySelectorAll('[data-tpl]').forEach(b => b.onclick = () => { f.text = templates(p)[b.dataset.tpl]; const t = document.getElementById('fText'); t.value = f.text; t.focus(); });
     document.querySelectorAll('[data-type]').forEach(b => b.onclick = () => { keep(); f.type = b.dataset.type; f.result = ''; rerender(); });
     document.querySelectorAll('[data-res]').forEach(b => b.onclick = () => { keep(); f.result = b.dataset.res; rerender(); });
     const submit = async (action, payload) => {
       keep(); state.busy = true; rerender();
       try {
-        const j = await api(action, Object.assign({ targetId: p.id, nextDate: f.nextDate || '' }, payload));
-        state.data = j; state.busy = false; state.act = ''; state.form = {};
-        render(); document.getElementById('detail').classList.add('open');
+        const j = await api(action, Object.assign({ targetId: p.id, nextDate: action === 'log' ? (f.nextDate || '') : '' }, payload));
+        state.data = j; state.busy = false;
+        if (action === 'log') { state.act = ''; f.type = ''; f.result = ''; f.memo = ''; f.nextDate = ''; } else f.text = '';
+        render(); document.getElementById('detail').classList.add('open'); scrollChat();
         toast(j.done || '記録しました');
       } catch (e) { state.busy = false; rerender(); toast(e.message); }
     };
     const ds = document.getElementById('doSend');
-    if (ds) ds.onclick = () => { keep(); if (!(f.text || '').trim()) return toast('メッセージを入力してください'); submit('send', { text: f.text }); };
+    const send = () => { keep(); if (!(f.text || '').trim()) return toast('メッセージを入力してください'); submit('send', { text: f.text }); };
+    if (ds) ds.onclick = send;
+    const ft = document.getElementById('fText');
+    if (ft) ft.addEventListener('keydown', ev => { if (ev.key === 'Enter' && (ev.ctrlKey || ev.metaKey)) { ev.preventDefault(); send(); } });
     const dl = document.getElementById('doLog');
     if (dl) dl.onclick = () => submit('log', { type: f.type, result: f.result || '', memo: f.memo || '' });
+  }
+  // 開いているトークを20秒ごとに更新（画面が表示されているときだけ。入力中の文字は消さない）
+  async function refreshThread() {
+    if (MOCK || state.busy || (state.view || 'people') !== 'people' || !state.sel || document.visibilityState !== 'visible' || !state.data) return;
+    const id = state.sel;
+    try {
+      const j = await api('thread', { targetId: id });
+      if (!j.person || state.sel !== id) return;
+      const ppl = state.data.people, i = ppl.findIndex(x => x.id === id);
+      if (i < 0) return;
+      const before = JSON.stringify(ppl[i].chat);
+      ppl[i] = j.person;
+      const live = document.getElementById('live'); if (live) live.textContent = `${abs(j.generatedAt).split(' ')[1]} に更新`;
+      if (JSON.stringify(j.person.chat) === before) return;
+      const m = document.getElementById('msgs'); if (m) { m.innerHTML = msgsHtml(j.person); scrollChat(); }
+      const row = app.querySelector(`.row[data-id="${CSS.escape(id)}"]`);
+      if (row) { const tmp = document.createElement('div'); tmp.innerHTML = rowHtml(j.person); const nr = tmp.firstElementChild; row.replaceWith(nr); bindRow(nr); }
+    } catch (e) { /* 次の回に再試行 */ }
+  }
+  setInterval(refreshThread, 20000);
+
+  /* ---------- 紐付け（顧客管理ツールの ID） ---------- */
+  function crmHtml(p) {
+    if (p.crmId) return `<div class="crm"><b>顧客管理ID：${esc(p.crmId)}</b>${p.source ? `<span>流入：${esc(p.source)}</span>` : ''}${p.linkedAt ? `<span>${abs(p.linkedAt)} 紐付け</span>` : ''}<span class="sp"></span>${p.realLine ? '<button id="unlink">解除</button>' : ''}</div>`;
+    return `<div class="crm off"><span>顧客管理ツールと未紐付け</span><span class="sp"></span>${p.realLine ? `<input id="crmIn" placeholder="求職者ID（例：C-1050）" aria-label="顧客管理ツールの求職者ID" maxlength="40"><button id="crmSave">紐付ける</button>` : '<span>サンプルは変更できません</span>'}</div>`;
+  }
+  function bindCrm(p) {
+    const go = async (action, x, msg) => {
+      try { const j = await api(action, Object.assign({ targetId: p.id }, x)); state.data = j; render(); document.getElementById('detail').classList.add('open'); scrollChat(); toast(j.done || msg); } catch (e) { toast(e.message); }
+    };
+    const sv = document.getElementById('crmSave');
+    if (sv) sv.onclick = () => { const v = document.getElementById('crmIn').value.trim(); if (!v) return toast('求職者IDを入れてください'); go('linkManual', { crmId: v }, '紐付けました'); };
+    const ul = document.getElementById('unlink');
+    if (ul) ul.onclick = () => { if (state.unlinkAsk !== p.id) { state.unlinkAsk = p.id; ul.textContent = 'もう一度押すと解除'; return; } state.unlinkAsk = ''; go('unlink', {}, '解除しました'); };
+  }
+  const linkMessage = (l, brand) => `${l.name ? l.name + '様\n' : ''}${brand || ''}です。ご応募・ご登録ありがとうございます。\n今後のご連絡や求人のご案内を、LINEでお送りします。下のリンクを開き、「LINEで受け取る」を押してください（1分ほどで完了します）。\n${l.url}`;
+  async function copyText(t, msg) {
+    try { await navigator.clipboard.writeText(t); toast(msg || 'コピーしました'); } catch (e) { toast('コピーできませんでした。手動で選択してください'); }
+  }
+  function loadQr(cb) {
+    if (window.QRCode) return cb();
+    const sc = document.createElement('script'); sc.src = 'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js'; sc.onload = cb; sc.onerror = () => { const w = document.querySelector('.qrw'); if (w) w.remove(); }; document.head.appendChild(sc);
+  }
+  const csvCell = v => `"${String(v == null ? '' : v).replace(/"/g, '""')}"`;
+  function downloadCsv(name, rows) {
+    const blob = new Blob(['﻿' + rows.map(r => r.map(csvCell).join(',')).join('\r\n')], { type: 'text/csv' });
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+  }
+  function renderLink() {
+    const d = state.data, L = d.link || { links: [], counts: {}, sources: [] }, c = L.counts || {};
+    const lk = state.lk = state.lk || {};
+    const res = lk.token ? L.links.find(x => x.token === lk.token) : null;
+    const pct = (a, b) => b ? Math.round(a / b * 100) + '%' : '—';
+    const unlinked = d.people.filter(p => !p.crmId);
+    const stCls = s => s === '紐付け済み' ? 'lk-ok' : s === '未使用' ? 'lk-wait' : 'lk-ng';
+    app.innerHTML = `
+      <div class="intro"><b>媒体や自社サイトからの応募者に「その人専用のLINEリンク」を送ると、タップした瞬間に顧客管理ツールの求職者IDとLINEが結び付きます。</b>以後のLINEの行動・CAの対応・選考・売上は、同じIDで追えます。${d.mode === 'demo' ? 'デモでは、発行したリンクをご自身のLINEで開くと、あなたに紐付きます。' : ''}</div>
+      <div class="howto">
+        <div><i>1</i><b>リンクを発行</b>求職者IDを入れて発行（CSVでまとめても可）</div>
+        <div><i>2</i><b>SMS・メールで送る</b>文面とQRコードをそのまま使えます</div>
+        <div><i>3</i><b>求職者がタップ</b>LINEで受け取る → 友だち追加</div>
+        <div><i>4</i><b>同じIDにたまる</b>${L.crmWebhook ? '顧客管理ツールにも自動で届きます' : 'CSVで顧客管理ツールに取り込めます'}</div>
+      </div>
+      <div class="kpis">
+        <div class="kpi"><span>発行したリンク</span><b>${c.issued || 0}<small>件</small></b></div>
+        <div class="kpi hot"><span>紐付け済み（リンク経由）</span><b>${c.linked || 0}<small>件・${pct(c.linked, c.issued)}</small></b></div>
+        <div class="kpi"><span>未使用（返事待ち）</span><b>${c.waiting || 0}<small>件</small></b></div>
+        <div class="kpi"><span>友だちの紐付け率</span><b>${pct(c.friendsLinked, c.friends)}<small>${c.friendsLinked || 0}/${c.friends || 0}人</small></b></div>
+      </div>
+      <div class="bcgrid">
+        <section class="panel" aria-label="リンクの発行">
+          <h2>専用リンクを発行</h2><p class="sub">1人に1つ。1回だけ使え、${L.days || 30}日で期限が切れます。</p>
+          <div class="grp"><b>顧客管理ツールの求職者ID（必須）</b><input type="text" id="lId" maxlength="40" placeholder="例：C-1050" value="${esc(lk.crmId || '')}"></div>
+          <div class="grp"><b>氏名（任意・送る文面に入ります。求職者のページには出ません）</b><input type="text" id="lName" maxlength="40" placeholder="例：佐々木 さやか" value="${esc(lk.name || '')}"></div>
+          <div class="grp"><b>流入経路</b><select id="lSrc">${['', ...(L.sources || [])].map(x => `<option value="${esc(x)}" ${lk.source === x ? 'selected' : ''}>${x ? esc(x) : '選ばない'}</option>`).join('')}</select></div>
+          <div class="frow"><button class="go" id="lGo" ${state.busy ? 'disabled' : ''}>${state.busy ? '発行しています…' : 'リンクを発行'}</button>${L.demoLimit ? `<span class="fnote" style="margin:0">デモは1日${L.demoLimit}件まで</span>` : ''}</div>
+          ${res ? `<div class="lkres" aria-live="polite"><b style="color:var(--ink)">${esc(res.crmId)}${res.name ? '（' + esc(res.name) + '）' : ''}のリンク</b>
+            <div class="url"><input readonly value="${esc(res.url)}" aria-label="リンク"><button class="lnk" id="cpUrl">コピー</button></div>
+            <b style="font-size:12px;color:var(--muted)">SMS・メールの文面</b>
+            <textarea id="lMsg" aria-label="送る文面">${esc(linkMessage(res, d.brand))}</textarea>
+            <div class="frow"><button class="lnk" id="cpMsg">文面をコピー</button>${d.mode === 'demo' ? `<a class="lnk" href="${esc(res.url)}" target="_blank" rel="noopener">自分のLINEで開いてみる</a>` : ''}</div>
+            <div class="qrw"><div class="qr" id="qr" aria-label="QRコード"></div><span>面談の場や紙の案内では、QRコードを読み取ってもらう方法もあります。</span></div></div>` : ''}
+          <details ${lk.bulkOpen ? 'open' : ''} id="bulkD"><summary>まとめて発行（CSV）</summary>
+            <p class="sub" style="margin-top:6px">1行に「求職者ID,氏名,流入経路」。顧客管理ツールから書き出した一覧を貼り付けてください。${L.demoLimit ? 'デモは5行まで。' : ''}</p>
+            <textarea id="lBulk" placeholder="C-1050,佐々木 さやか,マイナビ&#10;C-1051,高橋 美咲,Indeed">${esc(lk.bulk || '')}</textarea>
+            <div class="frow"><button class="go" id="lBulkGo">まとめて発行</button>${lk.tokens && lk.tokens.length ? '<button class="lnk" id="lBulkDl">発行したリンクをCSVで保存</button>' : ''}</div>
+            <p class="fnote">保存したCSVを、SMS配信ツールやメールの差し込みに使えます。</p></details>
+        </section>
+        <section class="panel" aria-label="発行したリンク">
+          <h2>発行したリンク</h2>
+          ${L.links.length ? `<div class="tblwrap"><table class="st lktbl"><thead><tr><th>求職者ID・氏名</th><th>状態</th><th>流入</th><th>日付</th><th></th></tr></thead><tbody>
+            ${L.links.slice(0, 100).map(l => { const pp = l.userId && d.people.find(p => p.id === l.userId); return `<tr><td><b>${esc(l.crmId)}</b>${l.name ? ' ' + esc(l.name) : ''}${pp ? `<small>LINE：<button class="lnkt" data-open="${esc(pp.id)}">${esc(pp.self ? 'あなた' : pp.name)}</button></small>` : ''}</td><td class="${stCls(l.status)}">${esc(l.status)}</td><td>${esc(l.source || '—')}</td><td>${l.usedAt ? abs(l.usedAt).split(' ')[0] + ' 紐付け' : l.createdAt ? abs(l.createdAt).split(' ')[0] + ' 発行' : '—'}</td><td>${l.status === '未使用' ? `<button class="lnk" data-show="${esc(l.token)}">表示</button> <button class="lnk" data-cancel="${esc(l.token)}">取消</button>` : ''}</td></tr>`; }).join('')}
+          </tbody></table></div>` : '<p class="empty">まだ発行していません</p>'}
+          <h2 style="margin-top:18px">まだ紐付いていない友だち（${unlinked.length}人）</h2>
+          <p class="sub">すでに友だちの人は、詳細の「紐付ける」にIDを入れるだけで結び付けられます。</p>
+          <div class="chips">${unlinked.slice(0, 30).map(p => `<button class="chip" data-open="${esc(p.id)}">${esc(p.self ? 'あなた' : p.name)}</button>`).join('') || '<span class="fnote">全員紐付いています</span>'}</div>
+          <h2 style="margin-top:18px">顧客管理ツールへの受け渡し</h2>
+          <dl class="cfg"><dt>自動送信（Webhook）</dt><dd>${L.crmWebhook ? '<span class="lk-ok">設定済み</span>　友だち追加・紐付け・相談・面談予約・選考・メッセージを送信' : '未設定（スクリプト プロパティ CRM_WEBHOOK_URL で設定）'}</dd>
+            <dt>本人確認</dt><dd>${L.verified ? '<span class="lk-ok">LINE の ID トークンで確認</span>' : 'デモ（本番では LOGIN_CHANNEL_ID を設定して ID トークンを確認）'}</dd></dl>
+          <div class="frow"><button class="lnk" id="exp">友だちの一覧をCSVで書き出す</button></div>
+          <p class="fnote">求職者ID・LINEの表示名・温度感・ステージ・流入経路・最後の行動・未返信をまとめて書き出します。顧客管理ツールに取り込めば、IDで突き合わせできます。</p>
+        </section>
+      </div>`;
+    const keep = () => { lk.crmId = document.getElementById('lId').value; lk.name = document.getElementById('lName').value; lk.source = document.getElementById('lSrc').value; lk.bulk = document.getElementById('lBulk').value; lk.bulkOpen = document.getElementById('bulkD').open; };
+    const run = async (action, x) => {
+      keep(); state.busy = true; renderLink();
+      try { const j = await api(action, x); state.data = j; state.busy = false; if (j.token) lk.token = j.token; if (j.tokens && j.tokens.length) lk.tokens = j.tokens; if (action === 'linkCreate') { lk.crmId = ''; lk.name = ''; } if (action === 'linkBulk') lk.bulk = ''; renderLink(); toast(j.done || '発行しました'); }
+      catch (e) { state.busy = false; renderLink(); toast(e.message); }
+    };
+    document.getElementById('lGo').onclick = () => { keep(); if (!lk.crmId.trim()) return toast('求職者IDを入れてください'); run('linkCreate', { crmId: lk.crmId, name: lk.name, source: lk.source }); };
+    document.getElementById('lBulkGo').onclick = () => { keep(); const rows = lk.bulk.split(/\r?\n/).map(l => l.split(/[,\t]/).map(x => x.trim())).filter(r => r[0]).map(r => ({ crmId: r[0], name: r[1] || '', source: r[2] || '' })); if (!rows.length) return toast('1行に「ID,氏名,流入経路」の形で入れてください'); run('linkBulk', { rows }); };
+    const bd = document.getElementById('lBulkDl');
+    if (bd) bd.onclick = () => downloadCsv('ondo_links.csv', [['求職者ID', '氏名', '流入経路', 'リンク', '文面', '期限']].concat(lk.tokens.map(t => L.links.find(x => x.token === t)).filter(Boolean).map(l => [l.crmId, l.name, l.source, l.url, linkMessage(l, d.brand), l.expiresAt ? abs(l.expiresAt).split(' ')[0] : ''])));
+    if (res) {
+      document.getElementById('cpUrl').onclick = () => copyText(res.url, 'リンクをコピーしました');
+      document.getElementById('cpMsg').onclick = () => copyText(document.getElementById('lMsg').value, '文面をコピーしました');
+      loadQr(() => { const q = document.getElementById('qr'); if (q && window.QRCode && !q.firstChild) new QRCode(q, { text: res.url, width: 200, height: 200, correctLevel: QRCode.CorrectLevel.M }); });
+    }
+    app.querySelectorAll('[data-show]').forEach(b => b.onclick = () => { lk.token = b.dataset.show; renderLink(); scrollTo(0, 0); });
+    app.querySelectorAll('[data-cancel]').forEach(b => b.onclick = () => { if (b.dataset.ask !== '1') { b.dataset.ask = '1'; b.textContent = 'もう一度で取消'; return; } run('linkCancel', { token: b.dataset.cancel }); });
+    app.querySelectorAll('[data-open]').forEach(b => b.onclick = () => { state.view = 'people'; state.filter = 'all'; state.sel = b.dataset.open; render(); document.getElementById('detail').classList.add('open'); scrollChat(); scrollTo(0, 0); });
+    document.getElementById('exp').onclick = () => downloadCsv('ondo_friends.csv', [['求職者ID', 'LINEユーザーID', 'LINEの表示名', '流入経路', '紐付け日', '温度感', 'ステージ', '悩み', '最後の行動', '未返信', '面談予約', 'ブロック']].concat(d.people.filter(p => !p.sample || d.mode === 'demo').map(p => [p.crmId, p.realLine ? p.id : '', p.self ? 'あなた' : p.name, p.source, p.linkedAt ? abs(p.linkedAt) : '', p.score, p.stage, (p.tags || []).join('・'), p.lastAt ? abs(p.lastAt) : '', p.unread || 0, p.booking ? p.booking.label : '', p.blocked ? 'はい' : ''])));
   }
 
   function showLogin(msg) {

@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>LINEでのご案内</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700&display=swap">
+<script src="../config.js"></script>
+<script src="../api.js"></script>
+<style>
+/* 専用リンク（応募者・既存の求職者を LINE と結び付ける）。求職者が見るページなので、求職者向けのやわらかいデザインで固定 */
+:root{
+  --bg:#FFF9F2; --card:#FFFFFF; --ink:#4A3A2C; --text:#5A4636; --muted:#8C7866; --line:#F0E2D2;
+  --accent:#E8875A; --accent-ink:#FFFFFF; --soft:#FDEFE3; --green:#06C755; --danger:#C0492B;
+  --font:"Zen Maru Gothic","Hiragino Maru Gothic ProN","Hiragino Sans","Noto Sans JP",system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--text)}
+body{font-family:var(--font);font-size:16px;line-height:1.8;-webkit-text-size-adjust:100%}
+main{max-width:480px;margin:0 auto;padding:max(28px, env(safe-area-inset-top)) 20px 40px;min-height:100vh;display:flex;flex-direction:column}
+.brand{font-weight:700;color:var(--accent);font-size:14px;letter-spacing:.04em;text-align:center}
+.card{background:var(--card);border-radius:24px;padding:28px 22px 24px;margin-top:16px;box-shadow:0 6px 24px rgba(160,110,60,.08)}
+.ill{display:block;margin:0 auto 10px}
+h1{font-size:21px;line-height:1.55;color:var(--ink);text-align:center;margin:0 0 10px;text-wrap:balance}
+p{margin:0 0 12px}
+.lead{text-align:center;color:var(--text);font-size:15px;text-wrap:pretty}
+ul.merit{list-style:none;padding:0;margin:16px 0 18px;display:grid;gap:8px}
+ul.merit li{background:var(--soft);border-radius:14px;padding:10px 14px;font-size:14.5px;display:flex;gap:10px;align-items:flex-start}
+ul.merit li::before{content:"";flex:0 0 18px;height:18px;margin-top:4px;border-radius:50%;background:var(--accent) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12l5 5L20 7'/%3E%3C/svg%3E") center/12px no-repeat}
+.go{display:block;width:100%;border:0;border-radius:999px;padding:15px 18px;font:inherit;font-weight:700;font-size:17px;cursor:pointer;text-align:center;text-decoration:none}
+.go.main{background:var(--accent);color:var(--accent-ink)}
+.go.line{background:var(--green);color:#fff}
+.go.sub{background:transparent;color:var(--muted);font-size:14px;font-weight:500;margin-top:6px}
+.go:disabled{opacity:.6;cursor:default}
+.go:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
+.note{font-size:12.5px;color:var(--muted);line-height:1.7;margin-top:14px}
+.err{color:var(--danger);text-align:center;font-size:15px}
+.spin{width:34px;height:34px;border-radius:50%;border:4px solid var(--line);border-top-color:var(--accent);margin:40px auto 14px;animation:r 1s linear infinite}
+@keyframes r{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.spin{animation-duration:3s}}
+.step{display:inline-block;background:var(--soft);color:var(--accent);font-weight:700;font-size:12.5px;border-radius:999px;padding:2px 12px;margin:0 auto 8px}
+.c{text-align:center}
+footer{margin-top:auto;padding-top:24px;text-align:center;font-size:11.5px;color:var(--muted)}
+</style>
+</head>
+<body>
+<main>
+  <div class="brand" id="brand"></div>
+  <div class="card" id="card" aria-live="polite"><div class="spin" role="status" aria-label="読み込んでいます"></div><p class="lead">読み込んでいます…</p></div>
+  <footer id="foot"></footer>
+</main>
+<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+<script>
+(function () {
+  const cfg = window.ONDO_CONFIG || {};
+  const card = document.getElementById('card');
+  const qs = new URLSearchParams(location.search);
+  // LIFF 経由では t が liff.state の中に入って届く
+  const fromState = () => { const s = qs.get('liff.state') || ''; const m = /[?&]t=([0-9a-f]{32})/.exec(decodeURIComponent(s)); return m ? m[1] : ''; };
+  const token = /^[0-9a-f]{32}$/.test(qs.get('t') || '') ? qs.get('t') : fromState();
+  const MOCK = qs.get('mock') || '';
+  const oa = cfg.oaId || '';
+  const addUrl = oa ? `https://line.me/R/ti/p/${encodeURIComponent(oa)}` : '';
+  const st = { brand: cfg.friendlyBrand || '', profile: null, idToken: '', inClient: false };
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const setBrand = b => { st.brand = b || st.brand; document.getElementById('brand').textContent = st.brand; document.getElementById('foot').textContent = st.brand ? `© ${st.brand}` : ''; };
+  const ill = `<svg class="ill" width="88" height="72" viewBox="0 0 88 72" aria-hidden="true"><rect x="6" y="10" width="52" height="38" rx="14" fill="#FDEFE3"/><path d="M20 48l-6 12 16-12z" fill="#FDEFE3"/><circle cx="22" cy="29" r="3.5" fill="#E8875A"/><circle cx="32" cy="29" r="3.5" fill="#E8875A"/><circle cx="42" cy="29" r="3.5" fill="#E8875A"/><rect x="40" y="26" width="42" height="30" rx="12" fill="#06C755"/><path d="M70 56l6 10-14-10z" fill="#06C755"/><text x="61" y="46" font-size="12" font-weight="700" fill="#fff" text-anchor="middle" font-family="sans-serif">LINE</text></svg>`;
+
+  function showError(msg, retry) {
+    card.innerHTML = `${ill}<h1>うまく開けませんでした</h1><p class="err">${esc(msg)}</p>${retry ? '<button class="go main" id="retry">もう一度ためす</button>' : ''}${addUrl ? `<a class="go sub" href="${addUrl}">${esc(st.brand || '公式アカウント')}のLINEを開く</a>` : ''}`;
+    const r = document.getElementById('retry'); if (r) r.onclick = () => location.reload();
+  }
+  function showIntro() {
+    const n = st.profile && st.profile.displayName ? `${esc(st.profile.displayName)}さん、` : '';
+    card.innerHTML = `${ill}<h1>${n}ご応募・ご登録<br>ありがとうございます</h1>
+      <p class="lead">ここから先のご連絡を、LINEでお届けします。</p>
+      <ul class="merit"><li>担当のキャリアアドバイザーと、LINEで気軽にやり取りできます</li><li>あなたの条件に合う求人を、LINEでお知らせします</li><li>面談の予約や日程の変更も、LINEでできます</li></ul>
+      <button class="go main" id="ok">LINEで受け取る</button>
+      <p class="note">「LINEで受け取る」を押すと、このLINEアカウントと、${esc(st.brand || '当社')}にご登録いただいた情報をひも付けます。LINEでのやり取りは、ご希望に合ったお仕事のご紹介にのみ使います。いつでもブロックで受け取りを止められます。</p>`;
+    document.getElementById('ok').onclick = bind;
+  }
+  async function bind() {
+    const b = document.getElementById('ok'); b.disabled = true; b.textContent = 'つないでいます…';
+    try {
+      let j;
+      if (MOCK) { await new Promise(r => setTimeout(r, 400)); j = MOCK === 'used' ? { ok: false, error: 'このリンクはすでに使われています。お手数ですが担当者にお問い合わせください' } : { ok: true, friend: MOCK === 'friend' }; }
+      else j = await window.ondoApi(cfg.gasUrl, { ondoLink: 1, t: token, userId: st.profile && st.profile.userId, idToken: st.idToken, displayName: st.profile && st.profile.displayName });
+      setBrand(j.brand);
+      if (!j.ok) return showError(j.error || 'うまくつなげませんでした', !!j.relogin);
+      let friend = !!j.friend;
+      if (!MOCK && window.liff && liff.getFriendship) { try { friend = (await liff.getFriendship()).friendFlag || friend; } catch (e) { /* 取れない設定 */ } }
+      showDone(friend, j.already);
+    } catch (e) { showError(e.message || '通信に失敗しました', true); }
+  }
+  function showDone(friend, already) {
+    if (friend) {
+      card.innerHTML = `${ill}<div class="c"><span class="step">完了</span></div><h1>${already ? 'すでにLINEとつながっています' : 'LINEとつながりました'}</h1>
+        <p class="lead">トークにご案内をお送りしました。担当者からのご連絡も、このLINEに届きます。</p>
+        <button class="go line" id="toTalk">トークを開く</button>`;
+      document.getElementById('toTalk').onclick = () => { if (st.inClient && window.liff) { try { liff.closeWindow(); return; } catch (e) { /* 予備へ */ } } if (addUrl) location.href = addUrl; };
+    } else {
+      card.innerHTML = `${ill}<div class="c"><span class="step">あと1ステップ</span></div><h1>最後に、友だち追加を<br>お願いします</h1>
+        <p class="lead">友だち追加をすると、担当者からのご連絡と求人のお知らせがLINEに届くようになります。</p>
+        ${addUrl ? `<a class="go line" href="${addUrl}">友だち追加する</a>` : ''}
+        <p class="note">すでに友だち追加している場合は、このままトークを開いてください。</p>`;
+    }
+  }
+
+  async function start() {
+    setBrand(st.brand);
+    if (!token && !MOCK) return showError('リンクが正しくありません。届いたメッセージのリンクをもう一度開いてください');
+    if (MOCK) { st.profile = { displayName: 'みほ' }; return showIntro(); }
+    try {
+      if (!cfg.liffId || !window.liff) throw new Error('LINEの設定がありません');
+      await liff.init({ liffId: cfg.liffId, withLoginOnExternalBrowser: true });
+      if (!liff.isLoggedIn()) { liff.login({ redirectUri: location.href }); return; }
+      st.inClient = liff.isInClient();
+      st.profile = await liff.getProfile();
+      st.idToken = (liff.getIDToken && liff.getIDToken()) || '';
+      showIntro();
+    } catch (e) {
+      console.warn(e);
+      showError('LINEでログインできませんでした。LINEアプリで開き直してください', true);
+    }
+  }
+  start();
+})();
+</script>
+</body>
+</html>
