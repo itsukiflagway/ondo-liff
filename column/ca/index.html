@@ -287,6 +287,14 @@ button:focus-visible{outline:3px solid #F3B44B;outline-offset:2px}
 .cfg{font-size:12.5px;display:grid;grid-template-columns:auto 1fr;gap:4px 12px;margin-top:6px}
 .cfg dt{color:var(--muted)}.cfg dd{margin:0;color:var(--ink)}
 @media (max-width:760px){.howto{grid-template-columns:repeat(2,minmax(0,1fr))}}
+/* 担当 */
+.who{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:8px;font-size:12.5px;color:var(--muted)}
+.who select{font:inherit;font-size:13px;border:1.5px solid var(--line);border-radius:999px;padding:4px 10px;background:var(--card);color:var(--ink);font-weight:700}
+.p-ca{background:#EEE9FB;color:#4B3A8F}
+.castat{margin-bottom:12px}
+.castat summary{font-size:12.5px;font-weight:700;color:var(--green);cursor:pointer}
+.castat table{margin-top:8px}
+.bar .me{font-size:11px;color:#CFE3DA}
 </style>
 </head>
 <body>
@@ -368,6 +376,7 @@ button:focus-visible{outline:3px solid #F3B44B;outline-offset:2px}
       if (action === 'linkManual') { Object.assign(p, { crmId: x.crmId, source: '', linkedAt: now }); L.counts.friendsLinked++; return Object.assign(out(), { done: `ID「${x.crmId}」と紐付けました` }); }
       Object.assign(p, { crmId: '', source: '', linkedAt: '' }); L.counts.friendsLinked--; return Object.assign(out(), { done: '紐付けを解除しました' });
     }
+    if (action === 'assign') { const p = mockData.people.find(q => q.id === x.targetId); const c = (mockData.cas || []).find(q => q.caId === x.caId); p.caId = x.caId; p.caName = c ? c.name : ''; mockData.done = '担当を変更しました（見た目確認用）'; return JSON.parse(JSON.stringify(mockData)); }
     if (action === 'log' || action === 'send') {
       const p = mockData.people.find(q => q.id === x.targetId);
       p.chat = p.chat || [];
@@ -406,11 +415,27 @@ button:focus-visible{outline:3px solid #F3B44B;outline-offset:2px}
     const ppl = d.people;
     const alerts = ppl.filter(p => p.alert);
     document.getElementById('mode').hidden = false;
-    document.getElementById('mode').textContent = d.mode === 'owner' ? '運用' : 'デモ';
-    document.getElementById('upd').textContent = `${abs(d.generatedAt)} 時点`;
+    document.getElementById('mode').textContent = d.mode === 'owner' ? (d.me && d.me.role === 'manager' ? 'マネージャー' : 'CA') : 'デモ';
+    document.getElementById('upd').innerHTML = d.mode === 'owner' && d.me ? `<span class="me">${esc(d.me.name)}</span>　` : '';
+    document.getElementById('upd').innerHTML += `${abs(d.generatedAt)} 時点`;
     const f = d.funnel;
-    const unreadP = ppl.filter(p => p.unread > 0 && !p.blocked);
-    const list = state.filter === 'alert' ? alerts : state.filter === 'unread' ? unreadP : ppl;
+    // 担当の絞り込み：CA は自分の担当（＋未割り当て）、マネージャーは全員が初期値
+    const me = d.me || {}; const cas = d.cas || [];
+    if (state.who == null) state.who = me.role === 'ca' ? 'mine' : 'all';
+    const whoOk = p => state.who === 'all' || (state.who === 'mine' ? (p.caId === me.caId || !p.caId) : state.who === 'none' ? !p.caId : p.caId === state.who);
+    const scoped = ppl.filter(whoOk);
+    const alertsS = scoped.filter(p => p.alert);
+    const unreadP = scoped.filter(p => p.unread > 0 && !p.blocked);
+    const list = state.filter === 'alert' ? alertsS : state.filter === 'unread' ? unreadP : scoped;
+    const whoHtml = cas.length ? `<div class="who"><span>担当：</span><select id="whoSel" aria-label="担当で絞り込む">
+        ${me.role === 'ca' ? `<option value="mine" ${state.who === 'mine' ? 'selected' : ''}>自分の担当・未割り当て</option>` : ''}
+        <option value="all" ${state.who === 'all' ? 'selected' : ''}>全員</option><option value="none" ${state.who === 'none' ? 'selected' : ''}>未割り当て</option>
+        ${cas.map(c => `<option value="${esc(c.caId)}" ${state.who === c.caId ? 'selected' : ''}>${esc(c.name)}（${c.assigned}人）</option>`).join('')}</select>
+        ${d.mode === 'owner' ? `<span>${d.assignMode === 'manual' ? '新しい友だちは手動で割り当て' : '新しい友だちは担当の少ない CA に自動で割り当て'}</span>` : ''}</div>` : '';
+    const castat = cas.length && (me.role !== 'ca' || d.mode === 'demo') ? `<details class="castat" ${state.castatOpen ? 'open' : ''} id="castat"><summary>CA別の状況（担当・対応・成約）</summary>
+      <div class="tblwrap"><table class="st"><thead><tr><th>CA</th><th>担当</th><th>今すぐ連絡</th><th>未返信</th><th>面談予約</th><th>今週の対応</th><th>選考中</th><th>成約</th><th>純売上</th></tr></thead><tbody>
+      ${cas.map(c => `<tr><td>${esc(c.name)}${c.role === 'manager' ? ' <span class="k">マネージャー</span>' : ''}${!c.calendar ? ' <span class="k">カレンダー未設定</span>' : ''}</td><td>${c.assigned}</td><td>${c.alerts}</td><td>${c.unread}</td><td>${c.booked}</td><td>${c.logs7d}</td><td>${c.inProgress}</td><td>${c.won}</td><td>${yen(c.fee)}</td></tr>`).join('')}
+      <tr><td>未割り当て</td><td>${ppl.filter(p => !p.caId).length}</td><td colspan="7"></td></tr></tbody></table></div></details>` : '';
     const self = ppl.find(p => p.self);
     app.innerHTML = `
       ${d.mode === 'demo' ? `<div class="intro"><b>${self ? 'あなたがLINEで操作した内容が、CAにはこう見えます。' : ''}</b>${self ? '（いちばん上の「あなた」）' : ''} ほかの人は架空のサンプルです。温度感は行動ごとの点数を時間とともに減らして計算し、上がった瞬間に「今すぐ連絡」に入ります。</div>` : ''}
@@ -420,22 +445,25 @@ button:focus-visible{outline:3px solid #F3B44B;outline-offset:2px}
         <div class="kpi"><span>面談予約</span><b>${ppl.filter(p => p.stage === '面談').length}<small>人</small></b></div>
         <div class="kpi"><span>友だち（${esc(d.template)}）</span><b>${ppl.length}<small>人</small></b></div>
       </div>
+      ${castat}
       <section class="funnel" aria-label="LINE登録から成約までの人数"><h2>LINE登録 → 成約</h2><div class="fsteps">
         ${fullFunnel(d).map((s, i, f2) => { const base = s.label === '推薦' ? f2[0] : f2[i - 1]; const r = i && base && base.n ? Math.round(s.n / base.n * 100) + '%' : ''; return `<div class="fs ${s.deal ? 'deal' : ''}"><span>${esc(s.label)}</span><b>${s.n}</b>${i ? `<i>${s.label === '推薦' ? '友だちの' : ''}${r}</i>` : ''}</div>`; }).join('')}
         <button class="fs next" id="toSales" style="text-align:left;border:0;cursor:pointer"><span>売上（今月）</span><b style="font-size:16px;color:var(--ink)">${yen(salesSum(d, monthRange(0)).net)}</b></button>
       </div></section>
       <div class="main">
         <section aria-label="求職者の一覧">
-          <div class="tabs"><button class="tab" data-f="alert" aria-pressed="${state.filter === 'alert'}">今すぐ連絡（${alerts.length}）</button><button class="tab" data-f="unread" aria-pressed="${state.filter === 'unread'}">未返信（${unreadP.length}）</button><button class="tab" data-f="all" aria-pressed="${state.filter === 'all'}">すべて（${ppl.length}）</button></div>
+          ${whoHtml}<div class="tabs"><button class="tab" data-f="alert" aria-pressed="${state.filter === 'alert'}">今すぐ連絡（${alertsS.length}）</button><button class="tab" data-f="unread" aria-pressed="${state.filter === 'unread'}">未返信（${unreadP.length}）</button><button class="tab" data-f="all" aria-pressed="${state.filter === 'all'}">すべて（${scoped.length}）</button></div>
           <div class="list">${list.length ? list.map(rowHtml).join('') : `<p class="empty">${state.filter === 'unread' ? '返信を待っているメッセージはありません' : 'いま連絡が必要な人はいません'}</p>`}</div>
         </section>
         <aside class="detail" id="detail" aria-label="求職者の詳細"></aside>
       </div>
-      <p class="foot">${d.mode === 'owner' ? `運用者としてログイン中　<a href="https://chat.line.biz/" target="_blank" rel="noopener">LINE公式アカウントのチャットを開く</a>　<button id="logout">ログアウト</button>` : '<button id="ownerLogin">運用者としてログイン（全員を表示）</button>'}</p>`;
+      <p class="foot">${d.mode === 'owner' ? `${esc((d.me || {}).name || '')}としてログイン中　<a href="https://chat.line.biz/" target="_blank" rel="noopener">LINE公式アカウントのチャットを開く</a>　<button id="logout">ログアウト</button>` : '<button id="ownerLogin">CA・マネージャーとしてログイン</button>'}</p>`;
     const lo = document.getElementById('logout'); if (lo) lo.onclick = () => { store.set(''); ownerKey = ''; location.reload(); };
     const ol = document.getElementById('ownerLogin'); if (ol) ol.onclick = showLogin;
     app.querySelectorAll('.tab').forEach(b => b.onclick = () => { state.filter = b.dataset.f; render(); });
     const ts = document.getElementById('toSales'); if (ts) ts.onclick = () => { state.view = 'sales'; render(); scrollTo(0, 0); };
+    const ws = document.getElementById('whoSel'); if (ws) ws.onchange = () => { state.who = ws.value; render(); };
+    const cs = document.getElementById('castat'); if (cs) cs.ontoggle = () => { state.castatOpen = cs.open; };
     app.querySelectorAll('.row').forEach(bindRow);
     renderDetail();
   }
@@ -445,7 +473,7 @@ button:focus-visible{outline:3px solid #F3B44B;outline-offset:2px}
     return `<button class="row ${p.self ? 'self' : ''}" data-id="${esc(p.id)}" aria-pressed="${state.sel === p.id}">
       <span class="temp t-${p.bandKey}"><b>${p.score}</b><span>${esc(p.band)}</span></span>
       <span>
-        <span class="rh"><b>${esc(p.self ? 'あなた（' + p.name + '）' : p.name)}</b>${p.unread && !p.blocked ? `<span class="pill p-unread">未返信 ${p.unread}</span>` : p.alert ? '<span class="pill p-bell">今すぐ</span>' : ''}${p.blocked ? '<span class="pill p-block">ブロック中</span>' : ''}<span class="pill p-stage">${esc(p.stage)}</span>${p.nextDate ? `<span class="pill p-due">次回連絡 ${esc(p.nextDate.slice(5).replace('-', '/'))}</span>` : ''}${p.gain48 > 0 ? `<span class="p-up">▲${p.gain48}（48時間）</span>` : ''}</span>
+        <span class="rh"><b>${esc(p.self ? 'あなた（' + p.name + '）' : p.name)}</b>${p.unread && !p.blocked ? `<span class="pill p-unread">未返信 ${p.unread}</span>` : p.alert ? '<span class="pill p-bell">今すぐ</span>' : ''}${p.blocked ? '<span class="pill p-block">ブロック中</span>' : ''}<span class="pill p-stage">${esc(p.stage)}</span>${p.caName ? `<span class="pill p-ca">${esc(p.caName)}</span>` : ''}${p.nextDate ? `<span class="pill p-due">次回連絡 ${esc(p.nextDate.slice(5).replace('-', '/'))}</span>` : ''}${p.gain48 > 0 ? `<span class="p-up">▲${p.gain48}（48時間）</span>` : ''}</span>
         ${p.tags.length ? `<span class="tags">${p.tags.map(t => `<span class="tag">${esc(t)}</span>`).join('')}</span>` : ''}
         <span class="talk">${esc(p.talk[0] || '')}</span>
         <span class="meta">${p.crmId ? `<span class="pill p-id">ID ${esc(p.crmId)}</span>` : ''}<span>最後の行動：${rel(p.lastAt)}</span><span>連絡のおすすめ：${esc(p.callTime)}</span>${p.lastCa ? `<span>CA対応：${esc(p.lastCa.type)}${p.lastCa.result ? '（' + esc(p.lastCa.result) + '）' : ''} ${rel(p.lastCa.t)}</span>` : '<span>CA対応：まだなし</span>'}</span>
@@ -463,6 +491,7 @@ button:focus-visible{outline:3px solid #F3B44B;outline-offset:2px}
         <div><h2>${esc(p.self ? 'あなた（' + p.name + '）' : p.name)}</h2>
           <div class="rh" style="margin-top:4px"><span class="pill p-stage">ステージ：${esc(p.stage)}</span>${p.gain48 > 0 ? `<span class="p-up">▲${p.gain48}（48時間）</span>` : ''}</div>
           ${p.tags.length ? `<div class="tags">${p.tags.map(t => `<span class="tag">悩み：${esc(t)}</span>`).join('')}</div>` : ''}</div></div>
+      ${assignHtml(p)}
       ${crmHtml(p)}
       ${chatHtml(p)}
       ${actionsHtml(p)}
@@ -479,6 +508,7 @@ button:focus-visible{outline:3px solid #F3B44B;outline-offset:2px}
     back.onclick = () => el.classList.remove('open');
     bindActions(p);
     bindCrm(p);
+    bindAssign(p);
     bindDeals(p);
   }
 
@@ -899,7 +929,7 @@ button:focus-visible{outline:3px solid #F3B44B;outline-offset:2px}
       const sep = d !== day ? `<div class="dsep">${d}</div>` : ''; day = d;
       const cls = c.who === 'seeker' && new Date(c.t).getTime() > lastCa ? 'seeker new' : c.who;
       const who = c.who === 'auto' ? '<small>メニュー・ページからの自動送信　</small>' : '';
-      return `${sep}<div class="m ${cls}">${who}${esc(c.text)}<time>${tm}</time></div>`;
+      return `${sep}<div class="m ${cls}">${who}${esc(c.text)}<time>${c.who === 'ca' && c.by ? esc(c.by) + '　' : ''}${tm}</time></div>`;
     }).join('');
   }
   function chatHtml(p) {
@@ -980,6 +1010,21 @@ button:focus-visible{outline:3px solid #F3B44B;outline-offset:2px}
   setInterval(refreshThread, 20000);
 
   /* ---------- 紐付け（顧客管理ツールの ID） ---------- */
+  function assignHtml(p) {
+    const d = state.data, me = d.me || {}, cas = d.cas || [];
+    if (!cas.length) return '';
+    const name = p.caName || '未割り当て';
+    if (d.mode !== 'owner' || !p.realLine) return `<div class="crm off"><span>担当：${esc(name)}</span></div>`;
+    if (me.role === 'manager') return `<div class="crm off"><span>担当：</span><select id="asgSel" aria-label="担当 CA">${['', ...cas.map(c => c.caId)].map(id => `<option value="${esc(id)}" ${p.caId === id ? 'selected' : ''}>${id ? esc((cas.find(c => c.caId === id) || {}).name) : '未割り当て'}</option>`).join('')}</select></div>`;
+    const mine = p.caId === me.caId;
+    return `<div class="crm off"><span>担当：${esc(name)}</span><span class="sp"></span>${!p.caId ? '<button id="asgMe">自分が担当する</button>' : mine ? '<button id="asgOff">担当を外す</button>' : ''}</div>`;
+  }
+  function bindAssign(p) {
+    const go = async caId => { try { const j = await api('assign', { targetId: p.id, caId }); state.data = j; render(); document.getElementById('detail').classList.add('open'); toast(j.done || '変更しました'); } catch (e) { toast(e.message); } };
+    const sel = document.getElementById('asgSel'); if (sel) sel.onchange = () => go(sel.value);
+    const am = document.getElementById('asgMe'); if (am) am.onclick = () => go((state.data.me || {}).caId);
+    const ao = document.getElementById('asgOff'); if (ao) ao.onclick = () => go('');
+  }
   function crmHtml(p) {
     if (p.crmId) return `<div class="crm"><b>顧客管理ID：${esc(p.crmId)}</b>${p.source ? `<span>流入：${esc(p.source)}</span>` : ''}${p.linkedAt ? `<span>${abs(p.linkedAt)} 紐付け</span>` : ''}<span class="sp"></span>${p.realLine ? '<button id="unlink">解除</button>' : ''}</div>`;
     return `<div class="crm off"><span>顧客管理ツールと未紐付け</span><span class="sp"></span>${p.realLine ? `<input id="crmIn" placeholder="求職者ID（例：C-1050）" aria-label="顧客管理ツールの求職者ID" maxlength="40"><button id="crmSave">紐付ける</button>` : '<span>サンプルは変更できません</span>'}</div>`;
@@ -1083,7 +1128,7 @@ button:focus-visible{outline:3px solid #F3B44B;outline-offset:2px}
   }
 
   function showLogin(msg) {
-    app.innerHTML = `<form class="login" id="lf"><h1>運用者としてログイン</h1><p class="fnote" style="margin:0">スクリプト プロパティ CA_VIEW_KEY に設定した合言葉を入力してください。この端末に保存され、次回から入力は不要です。</p>
+    app.innerHTML = `<form class="login" id="lf"><h1>CA・マネージャーとしてログイン</h1><p class="fnote" style="margin:0">CA ごとの合言葉（cas シートの key 列）か、マネージャーの合言葉（スクリプト プロパティ CA_VIEW_KEY）を入力してください。この端末に保存され、次回から入力は不要です。</p>
       <input type="password" id="lk" autocomplete="current-password" aria-label="合言葉" placeholder="合言葉">
       ${typeof msg === 'string' ? `<p class="err" style="padding:0 0 8px">${esc(msg)}</p>` : ''}
       <div class="frow"><button class="go" type="submit">ログイン</button><button type="button" class="chip" id="lc">キャンセル</button></div></form>`;
@@ -1100,7 +1145,7 @@ button:focus-visible{outline:3px solid #F3B44B;outline-offset:2px}
         if (liff.isLoggedIn()) state.uid = (await liff.getProfile()).userId;
       }
     } catch (e) { console.warn('LIFF init failed', e); }
-    if (!MOCK && !keyFromHash() && !state.uid) { app.innerHTML = '<p class="err">LINEでログインできませんでした。</p><p class="foot"><button id="ownerLogin">運用者としてログイン</button></p>'; document.getElementById('ownerLogin').onclick = showLogin; return; }
+    if (!MOCK && !keyFromHash() && !state.uid) { app.innerHTML = '<p class="err">LINEでログインできませんでした。</p><p class="foot"><button id="ownerLogin">CA・マネージャーとしてログイン</button></p>'; document.getElementById('ownerLogin').onclick = showLogin; return; }
     try {
       state.data = await load();
       const self = state.data.people.find(p => p.self);
