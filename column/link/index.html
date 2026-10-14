@@ -60,6 +60,9 @@ footer{margin-top:auto;padding-top:24px;text-align:center;font-size:11.5px;color
   // LIFF 経由では t が liff.state の中に入って届く
   const fromState = () => { const s = qs.get('liff.state') || ''; const m = /[?&]t=([0-9a-f]{32})/.exec(decodeURIComponent(s)); return m ? m[1] : ''; };
   const token = /^[0-9a-f]{32}$/.test(qs.get('t') || '') ? qs.get('t') : fromState();
+  // 経路リンク（?s=媒体名）：ひも付けはせず、どこから来たかだけを記録する
+  const fromStateS = () => { const s = qs.get('liff.state') || ''; const m = /[?&]s=([^&]+)/.exec(decodeURIComponent(s)); return m ? decodeURIComponent(m[1]) : ''; };
+  const source = (qs.get('s') || fromStateS() || '').slice(0, 30);
   const MOCK = qs.get('mock') || '';
   const oa = cfg.oaId || '';
   const addUrl = oa ? `https://line.me/R/ti/p/${encodeURIComponent(oa)}` : '';
@@ -74,6 +77,14 @@ footer{margin-top:auto;padding-top:24px;text-align:center;font-size:11.5px;color
   }
   function showIntro() {
     const n = st.profile && st.profile.displayName ? `${esc(st.profile.displayName)}さん、` : '';
+    if (!token) {
+      card.innerHTML = `${ill}<h1>${n}LINEで求人情報を<br>受け取りませんか</h1>
+        <p class="lead">${esc(st.brand || '当社')}の求人やお役立ち情報を、LINEでお届けします。</p>
+        <ul class="merit"><li>あなたの条件に合う求人を、LINEでお知らせします</li><li>担当のキャリアアドバイザーに、LINEで気軽に相談できます</li><li>面談の予約もLINEでできます</li></ul>
+        <button class="go main" id="ok">LINEで受け取る</button>
+        <p class="note">LINEでのやり取りは、ご希望に合ったお仕事のご紹介にのみ使います。いつでもブロックで受け取りを止められます。</p>`;
+      document.getElementById('ok').onclick = bind; return;
+    }
     card.innerHTML = `${ill}<h1>${n}ご応募・ご登録<br>ありがとうございます</h1>
       <p class="lead">ここから先のご連絡を、LINEでお届けします。</p>
       <ul class="merit"><li>担当のキャリアアドバイザーと、LINEで気軽にやり取りできます</li><li>あなたの条件に合う求人を、LINEでお知らせします</li><li>面談の予約や日程の変更も、LINEでできます</li></ul>
@@ -86,7 +97,7 @@ footer{margin-top:auto;padding-top:24px;text-align:center;font-size:11.5px;color
     try {
       let j;
       if (MOCK) { await new Promise(r => setTimeout(r, 400)); j = MOCK === 'used' ? { ok: false, error: 'このリンクはすでに使われています。お手数ですが担当者にお問い合わせください' } : { ok: true, friend: MOCK === 'friend' }; }
-      else j = await window.ondoApi(cfg.gasUrl, { ondoLink: 1, t: token, userId: st.profile && st.profile.userId, idToken: st.idToken, displayName: st.profile && st.profile.displayName });
+      else j = await window.ondoApi(cfg.gasUrl, { ondoLink: 1, t: token, s: token ? '' : source, userId: st.profile && st.profile.userId, idToken: st.idToken, displayName: st.profile && st.profile.displayName });
       setBrand(j.brand);
       if (!j.ok) return showError(j.error || 'うまくつなげませんでした', !!j.relogin);
       let friend = !!j.friend;
@@ -110,7 +121,7 @@ footer{margin-top:auto;padding-top:24px;text-align:center;font-size:11.5px;color
 
   async function start() {
     setBrand(st.brand);
-    if (!token && !MOCK) return showError('リンクが正しくありません。届いたメッセージのリンクをもう一度開いてください');
+    if (!token && !source && !MOCK) return showError('リンクが正しくありません。届いたメッセージのリンクをもう一度開いてください');
     if (MOCK) { st.profile = { displayName: 'みほ' }; return showIntro(); }
     try {
       if (!cfg.liffId || !window.liff) throw new Error('LINEの設定がありません');

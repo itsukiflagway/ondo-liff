@@ -271,12 +271,12 @@ button:focus-visible{outline:3px solid #F3B44B;outline-offset:2px}
 .crm input{font:inherit;font-size:13px;border:1.5px solid var(--line);border-radius:8px;padding:4px 8px;width:11em;background:#fff}
 .crm button,.lnk{border:1.5px solid var(--line);background:#fff;border-radius:8px;padding:3px 10px;font-size:12px;font-weight:700;cursor:pointer;color:var(--ink)}
 .lkres{margin-top:12px;border:1.5px solid var(--green);border-radius:12px;padding:12px;background:#fff}
-.lkres .url{display:flex;gap:6px;margin:6px 0}
-.lkres .url input{flex:1;min-width:0;font:inherit;font-size:12.5px;border:1.5px solid var(--line);border-radius:8px;padding:6px 8px;background:var(--soft)}
+.url{display:flex;gap:6px;margin:6px 0}
+.url input{flex:1;min-width:0;font:inherit;font-size:12.5px;border:1.5px solid var(--line);border-radius:8px;padding:6px 8px;background:var(--soft)}
 .lkres textarea{width:100%;font:inherit;font-size:13px;border:1.5px solid var(--line);border-radius:8px;padding:8px 10px;min-height:120px;line-height:1.7;background:var(--soft)}
-.lkres .qrw{display:flex;gap:12px;align-items:center;margin-top:10px;font-size:12px;color:var(--muted)}
-.lkres .qr{width:112px;height:112px;flex:0 0 112px;background:#fff;border:1px solid var(--line);border-radius:8px;padding:6px}
-.lkres .qr img,.lkres .qr canvas{width:100%!important;height:100%!important}
+.qrw{display:flex;gap:12px;align-items:center;margin-top:10px;font-size:12px;color:var(--muted)}
+.qr{width:112px;height:112px;flex:0 0 112px;background:#fff;border:1px solid var(--line);border-radius:8px;padding:6px}
+.qr img,.qr canvas{width:100%!important;height:100%!important}
 .howto{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-bottom:14px}
 .howto div{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:12.5px}
 .howto b{display:block;color:var(--ink);font-size:13px}
@@ -376,6 +376,7 @@ button:focus-visible{outline:3px solid #F3B44B;outline-offset:2px}
       if (action === 'linkManual') { Object.assign(p, { crmId: x.crmId, source: '', linkedAt: now }); L.counts.friendsLinked++; return Object.assign(out(), { done: `ID「${x.crmId}」と紐付けました` }); }
       Object.assign(p, { crmId: '', source: '', linkedAt: '' }); L.counts.friendsLinked--; return Object.assign(out(), { done: '紐付けを解除しました' });
     }
+    if (action === 'adCostSave') { const L = mockData.link; const r = L.adCosts.find(c => c.month === x.month && c.source === x.source); if (r) r.cost = +x.cost; else L.adCosts.push({ month: x.month, source: x.source, cost: +x.cost, memo: '' }); mockData.done = '保存しました（見た目確認用）'; return JSON.parse(JSON.stringify(mockData)); }
     if (action === 'assign') { const p = mockData.people.find(q => q.id === x.targetId); const c = (mockData.cas || []).find(q => q.caId === x.caId); p.caId = x.caId; p.caName = c ? c.name : ''; mockData.done = '担当を変更しました（見た目確認用）'; return JSON.parse(JSON.stringify(mockData)); }
     if (action === 'log' || action === 'send') {
       const p = mockData.people.find(q => q.id === x.targetId);
@@ -854,6 +855,32 @@ button:focus-visible{outline:3px solid #F3B44B;outline-offset:2px}
     const reached = (stage) => new Set(deals.filter(x => (x.history || []).some(h => h.stage === stage) || x.stage === stage).map(x => x.candidateId)).size;
     return f.concat([{ label: '推薦', n: new Set(deals.map(x => x.candidateId)).size, deal: true }, { label: '内定', n: reached('内定'), deal: true }, { label: '成約（入職）', n: reached('入職'), deal: true }]);
   }
+  /* 流入経路別：期間内に追加された友だち・成約・純売上と、月×経路の広告費から CPA・成約単価・費用対効果 */
+  function sourceTable(d, [from, to]) {
+    const L = d.link || {}, costs = L.adCosts || [];
+    const mFrom = from.slice(0, 7), mTo = to.slice(0, 7);
+    const rows = {};
+    const row = s => rows[s] = rows[s] || { source: s, friends: 0, booked: 0, won: 0, net: 0, cost: 0 };
+    d.people.forEach(p => { const s = p.source || '（経路なし）'; const c = (p.createdAt || '').slice(0, 10); if (c && c >= from && c <= to) { row(s).friends++; if (p.stage === '面談') row(s).booked++; } });
+    (d.deals || []).forEach(x => { if (x.joinDate && x.joinDate >= from && x.joinDate <= to && (x.stage === '入職' || x.stage === '早期退職')) { const r = row(x.source || '（経路なし）'); r.won++; r.net += x.net; } });
+    costs.forEach(c => { if (c.month >= mFrom && c.month <= mTo) row(c.source).cost += c.cost; });
+    const list = Object.values(rows).sort((a, b) => (b.net - a.net) || (b.friends - a.friends));
+    const tot = list.reduce((a, r) => ({ friends: a.friends + r.friends, booked: a.booked + r.booked, won: a.won + r.won, net: a.net + r.net, cost: a.cost + r.cost }), { friends: 0, booked: 0, won: 0, net: 0, cost: 0 });
+    const per = (c, n) => c && n ? yen(c / n) : '—';
+    const roi = r => r.cost ? (r.net / r.cost).toFixed(1) + '倍' : '—';
+    const tr = r => `<tr><td>${esc(r.source)}</td><td>${r.friends}</td><td>${r.booked}</td><td>${r.won}</td><td>${yen(r.net)}</td><td>${r.cost ? yen(r.cost) : '—'}</td><td>${per(r.cost, r.friends)}</td><td>${per(r.cost, r.won)}</td><td>${roi(r)}</td></tr>`;
+    const now = new Date(Date.now() + 9 * 3600e3), ym = `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, '0')}`;
+    const canEdit = d.mode === 'owner' ? (d.me || {}).role === 'manager' : true;
+    return `<div class="panel" style="margin-bottom:12px"><h2>流入経路別の費用対効果（この期間）</h2><p class="sub">友だちは追加日、成約は入職日で数えます。広告費は月ごとに入力した額を、期間に含まれる月で合計します。</p>
+      <div class="tblwrap"><table class="st"><thead><tr><th>流入経路</th><th>友だち</th><th>面談予約</th><th>成約</th><th>純売上</th><th>広告費</th><th>友だち1人あたり（CPA）</th><th>成約1件あたり</th><th>費用対効果</th></tr></thead><tbody>
+        ${list.map(tr).join('') || '<tr><td colspan="9" style="text-align:center;color:var(--muted)">この期間のデータはありません</td></tr>'}
+        ${list.length > 1 ? `<tr style="font-weight:700"><td>合計</td><td>${tot.friends}</td><td>${tot.booked}</td><td>${tot.won}</td><td>${yen(tot.net)}</td><td>${tot.cost ? yen(tot.cost) : '—'}</td><td>${per(tot.cost, tot.friends)}</td><td>${per(tot.cost, tot.won)}</td><td>${roi(tot)}</td></tr>` : ''}
+      </tbody></table></div>
+      ${canEdit ? `<details ${state.adOpen ? 'open' : ''} id="adD"><summary>広告費を入力（月×流入経路）</summary>
+        <div class="frow" style="flex-wrap:wrap"><input type="month" id="adM" value="${esc(state.adM || ym)}" aria-label="月" style="font:inherit;border:1.5px solid var(--line);border-radius:8px;padding:6px 8px"><select id="adS" style="width:auto">${(L.sources || []).map(x => `<option ${state.adS === x ? 'selected' : ''}>${esc(x)}</option>`).join('')}</select><input type="number" id="adC" min="0" step="1000" placeholder="金額（円）" aria-label="金額" style="width:9em;font:inherit;border:1.5px solid var(--line);border-radius:8px;padding:6px 8px"><button class="go" id="adGo">保存</button></div>
+        ${costs.length ? `<p class="fnote">入力済み：${costs.filter(c => c.month >= mFrom && c.month <= mTo).sort((a, b) => a.month < b.month ? -1 : 1).map(c => `${c.month} ${esc(c.source)} ${yen(c.cost)}`).join('　/　') || 'この期間はなし'}</p>` : ''}
+        <p class="fnote">${d.mode === 'demo' ? '見本の広告費が入っています。あなたが入力すると、あなた専用の数字に置き換わります。' : '媒体の請求額や広告の月額をそのまま入れてください。'}</p></details>` : ''}</div>`;
+  }
   function renderSales() {
     const d = state.data, st = STAGES_D();
     if (!state.sl) state.sl = { key: 'm0', range: monthRange(0) };
@@ -896,11 +923,14 @@ button:focus-visible{outline:3px solid #F3B44B;outline-offset:2px}
         <div class="board">${active.map(sg => { const cs = deals.filter(x => x.stage === sg); return `<div class="bcol"><h3>${esc(sg)}<span>${cs.length}件</span></h3>${cs.map(x => `<button class="bcard" data-open="${esc(x.candidateId)}"><b>${esc((pd(x.candidateId) || {}).self ? 'あなた' : x.candidateName.replace('（サンプル）', ''))}</b><span>${esc(x.company)}</span><br><span>${x.fee ? yen(x.fee) : '手数料未入力'}</span></button>`).join('')}</div>`; }).join('')}</div></div>
       <div class="panel" style="margin-bottom:12px"><h2>定着フォロー（返金の対象期間中）</h2><p class="sub">入職から${d.refundDays || 90}日以内に辞めると返金になる人です。入職直後の声かけで早期退職を防ぎます。</p>
         <div class="retain">${retain.length ? retain.map(x => `<div class="rt"><span><b>${esc(x.candidateName.replace('（サンプル）', ''))}</b>｜${esc(x.company)}｜入職 ${esc(x.joinDate)}</span><span>いま辞めた場合の返金 <b>${yen(x.fee * curRate(x))}</b></span><span class="left">あと${daysLeft(x.refundLimit)}日</span></div>`).join('') : '<p class="fnote">返金の対象期間中の人はいません</p>'}</div></div>
+      ${sourceTable(d, state.sl.range)}
       <div class="tblwrap"><table class="st"><thead><tr><th>成約・返金（この期間）</th><th>応募先</th><th>入職日</th><th>紹介手数料</th><th>返金</th></tr></thead><tbody>
         ${S.won.concat(S.refunds.filter(x => S.won.indexOf(x) < 0)).map(x => `<tr><td>${esc(x.candidateName)}</td><td style="text-align:left">${esc(x.company)}</td><td>${esc(x.joinDate)}</td><td>${S.won.indexOf(x) >= 0 ? yen(x.fee) : '—'}</td><td>${x.refund && x.leftDate >= state.sl.range[0] && x.leftDate <= state.sl.range[1] ? yen(x.refund) : '—'}</td></tr>`).join('') || '<tr><td colspan="5" style="text-align:center;color:var(--muted)">この期間の成約・返金はありません</td></tr>'}
       </tbody></table></div>
       <p class="fnote" style="margin-top:8px">紹介手数料率の初期値は${d.feeRate}%（スクリプト プロパティ FEE_RATE で変更）。返金規定の初期値：${(d.refundRules || []).map(r => `入職から${r.days}日以内の退職は${Math.round(r.rate * 100)}%`).join('、')}。契約に合わせて変更できます。</p>`;
     app.querySelectorAll('[data-sp]').forEach(b => b.onclick = () => { const pr = presets.find(x => x[0] === b.dataset.sp); state.sl = { key: pr[0], range: pr[2] }; renderSales(); });
+    const adD = document.getElementById('adD');
+    if (adD) { adD.ontoggle = () => { state.adOpen = adD.open; }; document.getElementById('adGo').onclick = async () => { const month = document.getElementById('adM').value, source = document.getElementById('adS').value, cost = document.getElementById('adC').value; state.adM = month; state.adS = source; if (!month || cost === '') return toast('月と金額を入れてください'); try { const j = await api('adCostSave', { month, source, cost }); state.data = j; renderSales(); toast(j.done || '保存しました'); } catch (e) { toast(e.message); } }; }
     document.getElementById('sGo').onclick = () => { const a = document.getElementById('sFrom').value, b2 = document.getElementById('sTo').value; if (!a || !b2) return toast('期間を指定してください'); state.sl = { key: '', range: a <= b2 ? [a, b2] : [b2, a] }; renderSales(); };
     app.querySelectorAll('[data-open]').forEach(b => b.onclick = () => { const id = b.dataset.open; if (!d.people.find(p => p.id === id)) return toast('過去の案件のため、求職者の詳細はありません'); state.view = 'people'; state.filter = 'all'; state.sel = id; render(); document.getElementById('detail').classList.add('open'); scrollTo(0, 0); });
     const tip = document.getElementById('tip2'), box = tip.parentElement;
@@ -1085,6 +1115,11 @@ button:focus-visible{outline:3px solid #F3B44B;outline-offset:2px}
             <textarea id="lMsg" aria-label="送る文面">${esc(linkMessage(res, d.brand))}</textarea>
             <div class="frow"><button class="lnk" id="cpMsg">文面をコピー</button>${d.mode === 'demo' ? `<a class="lnk" href="${esc(res.url)}" target="_blank" rel="noopener">自分のLINEで開いてみる</a>` : ''}</div>
             <div class="qrw"><div class="qr" id="qr" aria-label="QRコード"></div><span>面談の場や紙の案内では、QRコードを読み取ってもらう方法もあります。</span></div></div>` : ''}
+          <details ${lk.srcOpen ? 'open' : ''} id="srcD"><summary>経路リンク（媒体・広告・チラシごとのQR）</summary>
+            <p class="sub" style="margin-top:6px">求職者IDがまだない人向け。媒体の求人票・広告・チラシにこのリンクやQRを載せると、「どこから来た友だちか」が記録され、流入経路別の費用対効果に反映されます。</p>
+            <div class="grp"><b>流入経路</b><select id="srcSel">${(L.sources || []).map(x => `<option value="${esc(x)}" ${lk.src === x ? 'selected' : ''}>${esc(x)}</option>`).join('')}</select></div>
+            <div class="url"><input readonly id="srcUrl" value="${esc((L.sourceBase || '') + encodeURIComponent(lk.src || (L.sources || [])[0] || ''))}" aria-label="経路リンク"><button class="lnk" id="cpSrc">コピー</button></div>
+            <div class="qrw"><div class="qr" id="qrSrc" aria-label="QRコード"></div><span>すでに友だちの人が開いても、経路は最初の1回しか記録しません。</span></div></details>
           <details ${lk.bulkOpen ? 'open' : ''} id="bulkD"><summary>まとめて発行（CSV）</summary>
             <p class="sub" style="margin-top:6px">1行に「求職者ID,氏名,流入経路」。顧客管理ツールから書き出した一覧を貼り付けてください。${L.demoLimit ? 'デモは5行まで。' : ''}</p>
             <textarea id="lBulk" placeholder="C-1050,佐々木 さやか,マイナビ&#10;C-1051,高橋 美咲,Indeed">${esc(lk.bulk || '')}</textarea>
@@ -1106,7 +1141,13 @@ button:focus-visible{outline:3px solid #F3B44B;outline-offset:2px}
           <p class="fnote">求職者ID・LINEの表示名・温度感・ステージ・流入経路・最後の行動・未返信をまとめて書き出します。顧客管理ツールに取り込めば、IDで突き合わせできます。</p>
         </section>
       </div>`;
-    const keep = () => { lk.crmId = document.getElementById('lId').value; lk.name = document.getElementById('lName').value; lk.source = document.getElementById('lSrc').value; lk.bulk = document.getElementById('lBulk').value; lk.bulkOpen = document.getElementById('bulkD').open; };
+    const keep = () => { lk.crmId = document.getElementById('lId').value; lk.name = document.getElementById('lName').value; lk.source = document.getElementById('lSrc').value; lk.bulk = document.getElementById('lBulk').value; lk.bulkOpen = document.getElementById('bulkD').open; lk.srcOpen = document.getElementById('srcD').open; lk.src = document.getElementById('srcSel').value; };
+    const srcSel = document.getElementById('srcSel'), srcUrl = document.getElementById('srcUrl');
+    const drawSrcQr = () => loadQr(() => { const q = document.getElementById('qrSrc'); if (q && window.QRCode) { q.innerHTML = ''; new QRCode(q, { text: srcUrl.value, width: 200, height: 200, correctLevel: QRCode.CorrectLevel.M }); } });
+    srcSel.onchange = () => { lk.src = srcSel.value; srcUrl.value = (L.sourceBase || '') + encodeURIComponent(lk.src); if (document.getElementById('srcD').open) drawSrcQr(); };
+    document.getElementById('srcD').ontoggle = () => { lk.srcOpen = document.getElementById('srcD').open; if (lk.srcOpen) drawSrcQr(); };
+    if (lk.srcOpen) drawSrcQr();
+    document.getElementById('cpSrc').onclick = () => copyText(srcUrl.value, '経路リンクをコピーしました');
     const run = async (action, x) => {
       keep(); state.busy = true; renderLink();
       try { const j = await api(action, x); state.data = j; state.busy = false; if (j.token) lk.token = j.token; if (j.tokens && j.tokens.length) lk.tokens = j.tokens; if (action === 'linkCreate') { lk.crmId = ''; lk.name = ''; } if (action === 'linkBulk') lk.bulk = ''; renderLink(); toast(j.done || '発行しました'); }
