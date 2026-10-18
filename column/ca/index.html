@@ -787,7 +787,25 @@ button:focus-visible{outline:3px solid #F3B44B;outline-offset:2px}
   const STAGES_D = () => state.data.dealStages || ['推薦', '書類選考', '面接設定', '面接実施', '内定', '内定承諾', '入職'];
   function dealStatusCls(dl) { return dl.stage === '入職' ? 'st-won' : dl.stage === '早期退職' ? 'st-left' : ['辞退', '不合格'].indexOf(dl.stage) >= 0 ? 'st-end' : 'st-wait'; }
   function dealsOf(p) { return (state.data.deals || []).filter(x => x.candidateId === p.id); }
+  /* CRM（顧客管理ツール）と接続しているときは、選考・成約は CRM で入力し、ここでは CRM の状態を表示するだけ */
+  function crmStateHtml(p) {
+    const c = p.crm;
+    if (!c) return `<div class="sec"><h3>選考・成約（顧客管理ツール）</h3><p class="fnote">顧客管理ツールにまだこの人の記録がありません。紐付けが済むと、CRM 側のステータス・選考・成約がここに表示されます。</p></div>`;
+    const dl = c.deal || {};
+    const job = dl.job || {};
+    const yen2 = v => v == null ? '—' : yen(v);
+    return `<div class="sec"><h3>選考・成約（顧客管理ツール）</h3>
+      <dl class="kv"><dt>ステータス</dt><dd><b>${esc(c.status || '—')}</b>${c.noContact ? '　<span class="pill p-block">接触禁止</span>' : ''}</dd>
+        <dt>CRM の担当</dt><dd>${esc(c.assignee || '—')}</dd>
+        ${c.nextAction ? `<dt>次回アクション</dt><dd>${esc(c.nextAction)}</dd>` : ''}
+        ${dl.id ? `<dt>案件</dt><dd>${esc(job.facility || job.company || '—')}${job.job_type ? '（' + esc(job.job_type) + '）' : ''}　${dl.deal_status === 'finalized' ? '確定' : '進行中'}</dd>
+        ${dl.forecast_rank ? `<dt>ヨミ</dt><dd>${esc(dl.forecast_rank)}${dl.forecast_price ? '　' + yen(dl.forecast_price) : ''}</dd>` : ''}
+        ${dl.contracted_at ? `<dt>成約日</dt><dd>${esc(dl.contracted_at)}</dd>` : ''}${dl.joined_at ? `<dt>入職日</dt><dd>${esc(dl.joined_at)}</dd>` : ''}
+        ${dl.invoice_amount ? `<dt>請求額</dt><dd>${yen2(dl.invoice_amount)}${dl.refund_amount ? '（返金 ' + yen(dl.refund_amount) + '）' : ''}</dd>` : ''}` : ''}
+      </dl><p class="fnote">${c.syncedAt ? abs(c.syncedAt) + ' に顧客管理ツールから取り込み。' : ''}選考・成約・返金は顧客管理ツールで入力してください（ここでは入力しません）。</p></div>`;
+  }
   function dealsHtml(p) {
+    if (state.data.crmConnected) return crmStateHtml(p);
     const list = dealsOf(p), st = STAGES_D(), f = state.dealForm && state.dealForm.cid === p.id ? state.dealForm : null;
     const reachIdx = dl => { if (st.indexOf(dl.stage) >= 0) return st.indexOf(dl.stage); const h = (dl.history || []).map(x => st.indexOf(x.stage)).filter(i => i >= 0); return h.length ? Math.max.apply(null, h) : 0; };
     const card = dl => {
@@ -814,6 +832,7 @@ button:focus-visible{outline:3px solid #F3B44B;outline-offset:2px}
       : `<div class="frow" style="margin-top:8px"><button class="mini" id="dAdd">＋ 推薦（選考）を追加</button></div>`}</div>`;
   }
   function bindDeals(p) {
+    if (state.data.crmConnected) return;
     const q = id => document.getElementById(id);
     const rerender = () => { const el = q('detail'); const y = el.scrollTop; renderDetail(); q('detail').scrollTop = y; };
     const add = q('dAdd'); if (add) add.onclick = () => { state.dealForm = { cid: p.id, jobId: '', feeRate: state.data.feeRate }; rerender(); };
@@ -907,7 +926,7 @@ button:focus-visible{outline:3px solid #F3B44B;outline-offset:2px}
     const curRate = x => { const days = Math.round((new Date(today) - new Date(x.joinDate)) / 864e5); const r = (d.refundRules || []).find(q => days <= q.days); return r ? r.rate : 0; };
     const presets = [['m0', '今月', monthRange(0)], ['m1', '先月', monthRange(1)], ['q', '過去3ヶ月', [monthRange(2)[0], monthRange(0)[1]]], ['h', '過去6ヶ月', [monthRange(5)[0], monthRange(0)[1]]]];
     app.innerHTML = `
-      ${d.mode === 'demo' ? '<div class="intro"><b>LINE 登録から成約・売上まで</b>を、1人の求職者でつなげて管理できます。サンプルの案件は見本です。あなたやサンプルの求職者に選考を記録すると、ここに反映されます（デモの記録はあなたにしか見えません）。</div>' : ''}
+      ${d.crmConnected ? '<div class="intro"><b>顧客管理ツールと接続中。</b>選考・成約・返金・広告費は顧客管理ツールで入力し、ここは LINE 側の見え方（ファネル・定着フォロー・経路）の確認用です。各求職者の CRM 側の状態は、求職者の詳細に表示されます。</div>' : d.mode === 'demo' ? '<div class="intro"><b>LINE 登録から成約・売上まで</b>を、1人の求職者でつなげて管理できます。サンプルの案件は見本です。あなたやサンプルの求職者に選考を記録すると、ここに反映されます（デモの記録はあなたにしか見えません）。</div>' : ''}
       <div class="period" role="group" aria-label="集計期間">${presets.map(([k, l]) => `<button class="chip" data-sp="${k}" aria-pressed="${state.sl.key === k}">${l}</button>`).join('')}
         <span style="margin-left:6px;font-size:12px;color:var(--muted)">期間</span><input type="date" id="sFrom" value="${state.sl.range[0]}" aria-label="開始日"><span>〜</span><input type="date" id="sTo" value="${state.sl.range[1]}" aria-label="終了日"><button class="mini" id="sGo">集計</button></div>
       <div class="skpi">
